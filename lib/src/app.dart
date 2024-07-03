@@ -8,6 +8,7 @@ import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
 import 'Feed/home_page.dart';
+import './Profile/Login.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return const MaterialApp(
-      home: Homepage(),
+      home: Login(),
     );
 
     // AnimatedBuilder(
