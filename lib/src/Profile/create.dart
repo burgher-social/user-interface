@@ -4,9 +4,11 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'auth.dart';
 
 class Create extends StatefulWidget {
-  const Create({super.key});
+  const Create({super.key, @required this.email});
+  final String? email;
 
   @override
   State<Create> createState() => _CreateState();
@@ -21,6 +23,7 @@ class _CreateState extends State<Create> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    print(widget.email);
     // a();
   }
 
@@ -65,15 +68,18 @@ class _CreateState extends State<Create> {
       var response = await http.post(url,
           headers: {"Content-Type": "application/json"},
           body: json.encode({
-            'email': 'shobhit@email.com',
-            'tag': _tagController.text,
+            'email': widget.email,
+            'tag': int.parse(_tagController.text),
             "username": _usernameController.text,
             "name": _nameController.text
           }));
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
-
-      print(await http.read(Uri.https('example.com', 'foobar.txt')));
+      var jsonbpdy = json.decode(response.body);
+      print(jsonbpdy);
+      print(jsonbpdy["accessToken"]);
+      saveToken(jsonbpdy["accessToken"], jsonbpdy["refreshToken"]);
+      // print(await http.read(Ur i.https('example.com', 'foobar.txt')));
     } catch (e) {
       print(e);
     }

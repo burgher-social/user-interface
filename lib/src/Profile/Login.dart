@@ -1,3 +1,4 @@
+import 'package:burgher/src/Config/global.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import '../Storage/user.dart';
@@ -6,6 +7,7 @@ import 'dart:convert';
 import '../Storage/local.dart' as local_storage;
 import '../Feed/home_page.dart';
 import 'create.dart';
+import '../Utils/api.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -18,6 +20,7 @@ class _LoginState extends State<Login> {
   bool checkedState = false;
   bool isLoggedIn = false;
   bool isNewUser = false;
+  String email = "email@flutter.com";
   @override
   void initState() {
     super.initState();
@@ -63,10 +66,26 @@ class _LoginState extends State<Login> {
   Future<void> signInWithGoogleHelper() async {
     print("signed in with google");
     var email = "email@email.com";
-    print(email);
-    setState(() {
-      isNewUser = true;
-    });
+    Map<String, dynamic> body = {};
+    try {
+      body = await callApi(
+        "user/read/email",
+        false,
+        {"email": email},
+      );
+    } catch (e) {
+      print(e);
+    }
+    print(body);
+    if (body.containsKey("refreshToken") && body["refreshToken"] != null) {
+      local_storage.token = body["accessToken"];
+      AppConstants.accessToken = body["accessToken"];
+      AppConstants.refreshToken = body["refreshToken"];
+    } else {
+      setState(() {
+        isNewUser = true;
+      });
+    }
     setState(() {
       isLoggedIn = true;
       checkedState = true;
@@ -79,7 +98,9 @@ class _LoginState extends State<Login> {
       return const Placeholder();
     } else {
       if (isNewUser) {
-        return const Create();
+        return Create(
+          email: email,
+        );
       }
       if (isLoggedIn) {
         return const Homepage();
