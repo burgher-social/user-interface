@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:burgher/src/Config/global.dart';
 import 'package:http/http.dart' as http;
 
 Future<Map<String, dynamic>> callApi(
@@ -12,11 +13,15 @@ Future<Map<String, dynamic>> callApi(
   //   "username": _usernameController.text,
   //   "name": _nameController.text
   // });
+  var headers = {
+    "Content-Type": "application/json",
+  };
+  if (useAuth) {
+    headers["Authorization"] = AppConstants.accessToken!;
+  }
   var response = await http.post(
     url,
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headers,
     body: json.encode(body),
   );
   return json.decode(response.body);

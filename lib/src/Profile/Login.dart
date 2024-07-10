@@ -65,7 +65,7 @@ class _LoginState extends State<Login> {
 
   Future<void> signInWithGoogleHelper() async {
     print("signed in with google");
-    var email = "email@email.com";
+    var email = "email@flutter.com";
     Map<String, dynamic> body = {};
     try {
       body = await callApi(
