@@ -1,4 +1,5 @@
 import 'package:burgher/src/Config/global.dart';
+import 'package:burgher/src/Utils/Location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import '../Storage/user.dart';
@@ -27,8 +28,25 @@ class _LoginState extends State<Login> {
     checkAlreadySignedIn();
   }
 
+  updateLocation() async {
+    try {
+      print("calling location update");
+      var pos = await determineLocation();
+      print(pos);
+      print("Calling API loc crate");
+      await callApi("/location/create", true, {
+        "latitude": pos.latitude.toString(),
+        "longitude": pos.longitude.toString(),
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<bool> checkAlreadySignedIn() async {
     var user = await getUser();
+    print("EXISTING USER");
+    print(user);
     if (user == null) {
       print("Sign in with google");
       setState(() {
@@ -50,6 +68,7 @@ class _LoginState extends State<Login> {
         return false;
       }
       local_storage.token = user["token"];
+      await updateLocation();
       setState(() {
         isLoggedIn = true;
         checkedState = true;
@@ -81,15 +100,38 @@ class _LoginState extends State<Login> {
       local_storage.token = body["accessToken"];
       AppConstants.accessToken = body["accessToken"];
       AppConstants.refreshToken = body["refreshToken"];
+      AppConstants.id = body["id"];
+      AppConstants.emailId = body["emailId"];
+      AppConstants.username = body["username"];
+      AppConstants.tag = body["tag"].toString();
+
+      print(body);
+      try {
+        await createUser(
+          body["username"],
+          body["tag"],
+          body["accessToken"],
+          body["emailId"],
+          body["name"],
+          body["isVerified"],
+          body["id"],
+        );
+      } catch (e) {
+        print(e);
+      }
     } else {
-      setState(() {
-        isNewUser = true;
-      });
+      // setState(() {
+      isNewUser = true;
+      // });
     }
-    setState(() {
-      isLoggedIn = true;
-      checkedState = true;
-    });
+
+    await updateLocation();
+
+    isLoggedIn = true;
+    checkedState = true;
+    setState(() {});
+    // setState(() {
+    // });
   }
 
   @override

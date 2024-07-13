@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:burgher/src/Config/global.dart';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 Future<Map<String, dynamic>> callApi(
@@ -17,6 +18,7 @@ Future<Map<String, dynamic>> callApi(
     "Content-Type": "application/json",
   };
   if (useAuth) {
+    print(AppConstants.accessToken);
     headers["Authorization"] = AppConstants.accessToken!;
   }
   var response = await http.post(
@@ -25,4 +27,22 @@ Future<Map<String, dynamic>> callApi(
     body: json.encode(body),
   );
   return json.decode(response.body);
+}
+
+Future<void> callFormData(String path, File file) async {
+  print(file);
+  final bytes = file.readAsBytes();
+  print(bytes);
+  var url = Uri.http('localhost:8080', path);
+  var request = http.MultipartRequest("POST", url);
+
+  request.files.add(
+    http.MultipartFile(
+      'file',
+      bytes.asStream(),
+      file.lengthSync(),
+    ),
+  );
+  var resp = await request.send();
+  print(resp);
 }

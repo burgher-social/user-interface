@@ -10,6 +10,8 @@ Future<Position> determinePosition() async {
 
   // Test if location services are enabled.
   serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  print(serviceEnabled);
+  print("serviceEnabled");
   if (!serviceEnabled) {
     // Location services are not enabled don't continue
     // accessing the position and request users of the
@@ -18,6 +20,8 @@ Future<Position> determinePosition() async {
   }
 
   permission = await Geolocator.checkPermission();
+  print(permission);
+  print("permission");
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
@@ -32,16 +36,20 @@ Future<Position> determinePosition() async {
 
   if (permission == LocationPermission.deniedForever) {
     // Permissions are denied forever, handle appropriately.
+    print("denierd foreer");
     return Future.error(
         'Location permissions are permanently denied, we cannot request permissions.');
   }
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
+  print("Accepted");
+  print(await Geolocator.getCurrentPosition());
   return await Geolocator.getCurrentPosition();
 }
 
-void determineLocation() async {
+Future<Position> determineLocation() async {
   var pos = await determinePosition();
   print(pos);
+  return pos;
 }

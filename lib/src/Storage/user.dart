@@ -20,15 +20,18 @@ Future<void> updateUserToken(token, username, tag) async {
       "UPDATE users SET token = $token WHERE username = $username and tag = $tag;");
 }
 
-Future<void> createUser(username, tag, token, emailId, name, isVerfied) async {
+Future<void> createUser(
+    username, tag, token, emailId, name, isVerfied, id) async {
   var thisdb = await getDb();
   await thisdb?.rawQuery(
-      "INSERT INTO users (username, name, tag, email_id, is_verified, token) VALUES (?, ?, ?, ?, ?, ?);",
+      "INSERT INTO users (id, username, name, tag, email_id, is_verified, token) VALUES (?, ?, ?, ?, ?, ?, ?);",
       [
+        id,
         username,
         name,
         tag,
         emailId,
-        isVerfied,
+        isVerfied.toString(),
+        token,
       ]);
 }

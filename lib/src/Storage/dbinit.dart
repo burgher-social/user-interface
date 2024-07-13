@@ -16,7 +16,7 @@ Future<Database?> getDb() async {
         'CREATE TABLE feed (post_id varchar(30) UNIQUE, score INTEGER, is_seen BOOL DEFAULT FALSE, created_at int)',
       );
       await db.execute(
-        'CREATE TABLE users (username varchar(30), name varchar(20), tag varchar(4), email_id varchar(30), is_verfied BOOL DEFAULT FALSE, token varchar);',
+        'CREATE TABLE users (id varchar(20), username varchar(30), name varchar(20), tag varchar(4), email_id varchar(30), is_verified BOOL DEFAULT FALSE, token varchar);',
       );
     });
     return db;

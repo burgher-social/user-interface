@@ -1,3 +1,4 @@
+import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -48,6 +49,18 @@ class _HomepageState extends State<Homepage> {
     List<String> postsfromDb = await getPostIds(0, 20);
     print("POST IDS from DB");
     print(postsfromDb);
+    if (postsfromDb.isEmpty) {
+      print("POSTS FETCHING");
+      // var resp = await callApi(
+      //   "/feed/read",
+      //   true,
+      //   {
+      //     "offset": 0,
+      //     "limit": 100,
+      //   },
+      // );
+      // print(resp);
+    }
     for (var i in postsfromDb) {
       getPostContent(i);
     }
