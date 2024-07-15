@@ -1,3 +1,4 @@
+import 'package:burgher/src/Location/location_helper.dart';
 import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -41,7 +42,8 @@ class _HomepageState extends State<Homepage> {
     //     'created_at': DateTime.now().millisecondsSinceEpoch
     //   }
     // ]);
-    determineLocation();
+    // determineLocation();
+    updateLocation();
     postsGenerate();
   }
 
@@ -51,15 +53,24 @@ class _HomepageState extends State<Homepage> {
     print(postsfromDb);
     if (postsfromDb.isEmpty) {
       print("POSTS FETCHING");
-      // var resp = await callApi(
-      //   "/feed/read",
-      //   true,
-      //   {
-      //     "offset": 0,
-      //     "limit": 100,
-      //   },
-      // );
-      // print(resp);
+      try {
+        var resp = await callApi(
+          "/feed/read",
+          true,
+          {
+            "offset": 0,
+            "limit": 100,
+          },
+        );
+        List<Map<String, dynamic>> rows =
+            List<Map<String, dynamic>>.from(resp["response"]);
+        print(rows);
+        await generateFeed(rows);
+        postsfromDb = await getPostIds(0, 20);
+        print(resp);
+      } catch (e) {
+        print(e);
+      }
     }
     for (var i in postsfromDb) {
       getPostContent(i);
@@ -77,14 +88,23 @@ class _HomepageState extends State<Homepage> {
     // });
   }
 
-  Future<String> getContent(String postId) async {
-    return "Content";
+  Future<Map<String, dynamic>> getContent(String postId) async {
+    final res = await callApi(
+      "/post/readOne",
+      false,
+      {
+        "postId": postId,
+      },
+    );
+
+    print(res);
+    return res;
   }
 
   void getPostContent(String postId) async {
     getContent(postId).then((value) {
       postsTemp.add(ListTile(
-        leading: Text(value),
+        leading: Text(value["content"]),
         title: Text(postId),
       ));
       markSeen(postId);

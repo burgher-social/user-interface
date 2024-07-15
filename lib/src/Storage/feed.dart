@@ -39,7 +39,7 @@ Future<void> markSeen(String postId) async {
 Future<List<String>> getPostIds(int offset, int limit) async {
   var thisdb = await getDb();
   var feed = await thisdb?.rawQuery(
-      "SELECT * FROM feed ORDER BY score DESC LIMIT $limit OFFSET $offset; ");
+      "SELECT * FROM feed WHERE is_seen = FALSE ORDER BY score DESC LIMIT $limit OFFSET $offset; ");
   var length = feed?.length ?? 0;
   List<String> posts = [];
   for (int i = 0; i < length; ++i) {
@@ -65,13 +65,14 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
   try {
     for (var row in posts) {
       await db?.rawQuery(
-          "INSERT OR IGNORE INTO feed (post_id, score, is_seen, created_at) VALUES (?, ?, ?, ?)",
-          [
-            row['post_id'],
-            row['score'],
-            row['is_seen'] ? 1 : 0,
-            row['created_at']
-          ]);
+        "INSERT OR IGNORE INTO feed (post_id, score, is_seen, created_at) VALUES (?, ?, ?, ?)",
+        [
+          row['postId'],
+          row['score'],
+          0,
+          row['timestamp'],
+        ],
+      );
       print(row);
     }
     var a = await getPostIds(0, 20);

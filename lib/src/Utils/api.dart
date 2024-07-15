@@ -29,7 +29,13 @@ Future<Map<String, dynamic>> callApi(
     headers: headers,
     body: json.encode(body),
   );
-  return json.decode(response.body);
+  print(response.body);
+  final decoded = json.decode(response.body);
+  if (decoded is List) {
+    print("fixing list");
+    return {"response": decoded};
+  }
+  return decoded;
 }
 
 Future<void> callFormData(String path, File file) async {
