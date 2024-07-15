@@ -15,11 +15,13 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   File? image;
+  List<Widget> posts = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getUserPosts();
   }
 
   updateUserImage(File image) async {
@@ -30,6 +32,33 @@ class _ProfileState extends State<Profile> {
     } catch (e) {
       print(e);
     }
+  }
+
+  getUserPosts() async {
+    var res = await callApi("post/read", false, {
+      "userId": ".O1JafnACwuLr3xxTJ6",
+    });
+    List<Map<String, dynamic>> rows =
+        List<Map<String, dynamic>>.from(res["response"]);
+    posts = [];
+    for (var i in rows) {
+      posts.add(
+        ListTile(
+          title: Text(i["post"]["content"]),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: SizedBox.fromSize(
+              size: const Size.fromRadius(48), // Image radius
+              child: Image.network(
+                'https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    setState(() {});
   }
 
   @override
@@ -115,20 +144,11 @@ class _ProfileState extends State<Profile> {
             color: Colors.black,
           ),
           Expanded(
-            child: ListView(
-              children: [
-                ListTile(
-                  leading: Text("value"),
-                  title: Text("postId"),
-                ),
-                Divider(
-                  color: Colors.black,
-                ),
-                ListTile(
-                  leading: Text("value"),
-                  title: Text("postId"),
-                )
-              ],
+            child: ListView.builder(
+              itemCount: posts.length,
+              itemBuilder: (BuildContext context, int index) {
+                return posts[index];
+              },
             ),
           ),
         ],
