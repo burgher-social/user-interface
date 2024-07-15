@@ -1,3 +1,4 @@
+import 'package:burgher/src/Feed/feed_generate.dart';
 import 'package:burgher/src/Location/location_helper.dart';
 import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
@@ -21,97 +22,57 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
-    // generateFeed();
-    // generateFeed([
-    //   {
-    //     'post_id': '123',
-    //     'score': 120,
-    //     'is_seen': false,
-    //     'created_at': DateTime.now().millisecondsSinceEpoch
-    //   },
-    //   {
-    //     'post_id': '124',
-    //     'score': 122,
-    //     'is_seen': false,
-    //     'created_at': DateTime.now().millisecondsSinceEpoch
-    //   },
-    //   {
-    //     'post_id': '12',
-    //     'score': 10,
-    //     'is_seen': false,
-    //     'created_at': DateTime.now().millisecondsSinceEpoch
-    //   }
-    // ]);
-    // determineLocation();
-    updateLocation();
+    // updateLocation();
     postsGenerate();
   }
 
   void postsGenerate() async {
-    List<String> postsfromDb = await getPostIds(0, 20);
-    print("POST IDS from DB");
-    print(postsfromDb);
-    if (postsfromDb.isEmpty) {
-      print("POSTS FETCHING");
-      try {
-        var resp = await callApi(
-          "/feed/read",
-          true,
-          {
-            "offset": 0,
-            "limit": 100,
-          },
-        );
-        List<Map<String, dynamic>> rows =
-            List<Map<String, dynamic>>.from(resp["response"]);
-        print(rows);
-        await generateFeed(rows);
-        postsfromDb = await getPostIds(0, 20);
-        print(resp);
-      } catch (e) {
-        print(e);
-      }
-    }
-    for (var i in postsfromDb) {
+    var postIds = await getRelevantPostIds();
+    print(postIds);
+    for (var i in postIds) {
       getPostContent(i);
     }
-    // List<Widget> postst = [];
-    // for (int i = 0; i < postsfromDb.length; ++i) {
-    //   postst.add(const ListTile(
-    //     leading: Text("icon"),
-    //     title: Text("title"),
-    //   ));
-    // }
-
-    // setState(() {
-    //   posts = postst;
-    // });
   }
 
-  Future<Map<String, dynamic>> getContent(String postId) async {
-    final res = await callApi(
-      "/post/readOne",
-      false,
-      {
-        "postId": postId,
-      },
-    );
+  // Future<Map<String, dynamic>> getContent(String postId) async {
+  //   final res = await callApi(
+  //     "/post/readOne",
+  //     false,
+  //     {
+  //       "postId": postId,
+  //     },
+  //   );
 
-    print(res);
-    return res;
-  }
+  //   print(res);
+  //   return res;
+  // }
 
-  void getPostContent(String postId) async {
-    getContent(postId).then((value) {
-      postsTemp.add(ListTile(
-        leading: Text(value["content"]),
-        title: Text(postId),
-      ));
+  Future<void> getPostContent(String postId) async {
+    await getContent(postId).then((value) {
+      print("adding post - $postId");
+      // postsTemp.add(ListTile(
+      // title: Text(value["post"]["content"]),
+      // leading: Text(postId),
+      // ));
       markSeen(postId);
       print("Marked seeb");
       print(posts);
+      // print(postsTemp);
       setState(() {
-        posts = postsTemp;
+        // print(posts);
+        posts.add(ListTile(
+          title: Text(value["post"]["content"]),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: SizedBox.fromSize(
+              size: const Size.fromRadius(48), // Image radius
+              child: Image.network(
+                'https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ));
       });
     });
   }
@@ -141,7 +102,11 @@ class _HomepageState extends State<Homepage> {
         body: Column(children: [
           Flexible(
             child: Scaffold(
-              body: ListView(children: posts),
+              body: ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return posts[index];
+                  }),
             ),
           )
         ]),

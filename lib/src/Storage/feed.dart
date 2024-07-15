@@ -29,17 +29,22 @@ Future<void> markSeen(String postId) async {
   try {
     print("marking seen: $postId");
     print(thisdb);
-    await thisdb?.rawQuery(
-        "UPDATE feed SET score = score - 100, is_seen = true WHERE post_id = $postId; ");
+    await thisdb?.rawQuery("""
+      UPDATE feed SET score = CASE 
+                WHEN score - 100 >= 1000 THEN score - 100 
+                ELSE 1000 
+            END, is_seen = true WHERE post_id = '$postId';
+            """);
   } catch (e) {
     print(e);
   }
 }
 
-Future<List<String>> getPostIds(int offset, int limit) async {
+Future<List<String>> getPostIds(int offset, int limit,
+    {bool isSeen = false}) async {
   var thisdb = await getDb();
   var feed = await thisdb?.rawQuery(
-      "SELECT * FROM feed WHERE is_seen = FALSE ORDER BY score DESC LIMIT $limit OFFSET $offset; ");
+      "SELECT * FROM feed WHERE is_seen = ${isSeen ? "TRUE" : "FALSE"} ORDER BY score DESC LIMIT $limit OFFSET $offset; ");
   var length = feed?.length ?? 0;
   List<String> posts = [];
   for (int i = 0; i < length; ++i) {
@@ -60,7 +65,7 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
   // print(db);
   if (db == null) {
     await getDb();
-    print("GOT DB");
+    // print("GOT DB");
   }
   try {
     for (var row in posts) {
@@ -73,11 +78,11 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
           row['timestamp'],
         ],
       );
-      print(row);
+      // print(row);
     }
-    var a = await getPostIds(0, 20);
-    print("INSERTED DATA");
-    print(a);
+    // var a = await getPostIds(0, 20);
+    // print("INSERTED DATA");
+    // print(a);
   } catch (e) {
     print(e);
   }

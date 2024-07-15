@@ -100,7 +100,14 @@ Future<String?> getToken() async {
           );
           if (response.statusCode == 401) return null;
           var resp = json.decode(response.body);
-          saveToken(resp["accessToken"], resp["refreshToken"]);
+          print(resp);
+          print("resp for token refresh");
+          try {
+            saveToken(resp["accessToken"], resp["refreshToken"]);
+          } catch (e) {
+            print(e);
+          }
+
           return resp["accessToken"];
         } else {
           return null;
