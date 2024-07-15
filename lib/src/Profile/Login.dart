@@ -1,7 +1,9 @@
 import 'package:burgher/src/Config/global.dart';
+import 'package:burgher/src/Profile/auth.dart';
 import 'package:burgher/src/Utils/Location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import '../Location/location_helper.dart';
 import '../Storage/user.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'dart:convert';
@@ -9,6 +11,7 @@ import '../Storage/local.dart' as local_storage;
 import '../Feed/home_page.dart';
 import 'create.dart';
 import '../Utils/api.dart';
+import 'login_handler.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -28,58 +31,51 @@ class _LoginState extends State<Login> {
     checkAlreadySignedIn();
   }
 
-  updateLocation() async {
-    try {
-      print("calling location update");
-      var pos = await determineLocation();
-      print(pos);
-      print("Calling API loc crate");
-      await callApi("/location/create", true, {
-        "latitude": pos.latitude.toString(),
-        "longitude": pos.longitude.toString(),
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<bool> checkAlreadySignedIn() async {
-    var user = await getUser();
-    print("EXISTING USER");
-    print(user);
-    if (user == null) {
-      print("Sign in with google");
-      setState(() {
-        isLoggedIn = false;
-        checkedState = true;
-      });
-    } else {
-      Codec<String, String> stringToBase64 = utf8.fuse(base64);
-      var jsonToken =
-          json.decode(stringToBase64.decode(user["token"].split(".")[1]));
-      DateTime now = DateTime.now();
-      DateTime utcNow = now.toUtc(); // Convert local time to UTC
-      int epochTime = utcNow.millisecondsSinceEpoch;
-      if (jsonToken["exp"] > epochTime) {
-        setState(() {
-          checkedState = true;
-          isLoggedIn = false;
-        });
-        return false;
-      }
-      local_storage.token = user["token"];
+  Future<void> checkAlreadySignedIn() async {
+    isLoggedIn = await checkAlreadySignedInHelper();
+    checkedState = true;
+    setState(() {});
+    if (isLoggedIn) {
       await updateLocation();
-      setState(() {
-        isLoggedIn = true;
-        checkedState = true;
-      });
-      return true;
     }
-    setState(() {
-      isLoggedIn = false;
-      checkedState = true;
-    });
-    return false;
+    return;
+    // var user = await getUser();
+    // print("EXISTING USER");
+    // print(user);
+    // if (user == null) {
+    //   print("Sign in with google");
+    //   setState(() {
+    //     isLoggedIn = false;
+    //     checkedState = true;
+    //   });
+    // } else {
+    //   Codec<String, String> stringToBase64 = utf8.fuse(base64);
+    //   var jsonToken =
+    //       json.decode(stringToBase64.decode(user["token"].split(".")[1]));
+    //   DateTime now = DateTime.now();
+    //   DateTime utcNow = now.toUtc(); // Convert local time to UTC
+    //   int epochTime = utcNow.millisecondsSinceEpoch;
+    //   if (jsonToken["exp"] > epochTime) {
+    //     setState(() {
+    //       checkedState = true;
+    //       isLoggedIn = false;
+    //     });
+    //     return false;
+    //   }
+    //   local_storage.token = user["token"];
+    //   saveToken(user["token"], null);
+    //   await updateLocation();
+    //   setState(() {
+    //     isLoggedIn = true;
+    //     checkedState = true;
+    //   });
+    //   return true;
+    // }
+    // setState(() {
+    //   isLoggedIn = false;
+    //   checkedState = true;
+    // });
+    // return false;
   }
 
   Future<void> signInWithGoogleHelper() async {
@@ -90,20 +86,25 @@ class _LoginState extends State<Login> {
       body = await callApi(
         "user/read/email",
         false,
-        {"email": email},
+        {
+          "email": email,
+        },
       );
     } catch (e) {
       print(e);
+      return;
     }
     print(body);
     if (body.containsKey("refreshToken") && body["refreshToken"] != null) {
-      local_storage.token = body["accessToken"];
-      AppConstants.accessToken = body["accessToken"];
-      AppConstants.refreshToken = body["refreshToken"];
-      AppConstants.id = body["id"];
-      AppConstants.emailId = body["emailId"];
-      AppConstants.username = body["username"];
-      AppConstants.tag = body["tag"].toString();
+      await saveToken(body["accessToken"], body["refreshToken"]);
+      await updateLocation();
+      // local_storage.token = body["accessToken"];
+      // AppConstants.accessToken = body["accessToken"];
+      // AppConstants.refreshToken = body["refreshToken"];
+      // AppConstants.id = body["id"];
+      // AppConstants.emailId = body["emailId"];
+      // AppConstants.username = body["username"];
+      // AppConstants.tag = body["tag"].toString();
 
       print(body);
       try {
@@ -118,14 +119,13 @@ class _LoginState extends State<Login> {
         );
       } catch (e) {
         print(e);
+        return;
       }
     } else {
       // setState(() {
       isNewUser = true;
       // });
     }
-
-    await updateLocation();
 
     isLoggedIn = true;
     checkedState = true;

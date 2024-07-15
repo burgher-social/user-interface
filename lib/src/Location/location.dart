@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 
+import 'location_helper.dart';
+
 class Location extends StatefulWidget {
   const Location({super.key});
 
@@ -21,19 +23,19 @@ class _LocationState extends State<Location> {
   }
 
   getLocation() async {
-    try {
-      print("getting location");
-      var pos = await determineLocation();
-      print(locPer);
-      print(pos);
-      setState(() {
-        locPer = true;
-      });
-    } catch (e) {
-      print(e);
-      print("error");
-      await getLocation();
-    }
+    locPer = await getLocationHelper();
+    setState(() {});
+    // try {
+    //   print("getting location");
+    //   var pos = await determineLocation();
+    //   setState(() {
+    //     locPer = true;
+    //   });
+    // } catch (e) {
+    //   print(e);
+    //   print("error in fetching location");
+    //   await getLocation();
+    // }
   }
 
   @override

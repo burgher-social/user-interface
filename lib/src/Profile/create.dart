@@ -5,6 +5,7 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'auth.dart';
+import '../Location/location_helper.dart';
 
 class Create extends StatefulWidget {
   const Create({super.key, @required this.email});
@@ -78,7 +79,8 @@ class _CreateState extends State<Create> {
       var jsonbpdy = json.decode(response.body);
       print(jsonbpdy);
       print(jsonbpdy["accessToken"]);
-      saveToken(jsonbpdy["accessToken"], jsonbpdy["refreshToken"]);
+      await saveToken(jsonbpdy["accessToken"], jsonbpdy["refreshToken"]);
+      await updateLocation();
       // print(await http.read(Ur i.https('example.com', 'foobar.txt')));
     } catch (e) {
       print(e);

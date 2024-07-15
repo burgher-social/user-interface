@@ -3,6 +3,8 @@ import 'package:burgher/src/Config/global.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
+import '../Profile/Auth.dart';
+
 Future<Map<String, dynamic>> callApi(
     String path, bool useAuth, Map<String, dynamic>? body) async {
   var url = Uri.http('localhost:8080', path);
@@ -19,7 +21,8 @@ Future<Map<String, dynamic>> callApi(
   };
   if (useAuth) {
     print(AppConstants.accessToken);
-    headers["Authorization"] = AppConstants.accessToken!;
+    headers["Authorization"] = (AppConstants.accessToken ?? await getToken())!;
+    //TODO: if this returns null, redirect to sign in page.
   }
   var response = await http.post(
     url,
