@@ -50,8 +50,8 @@ bool isTokenValid(String token) {
 
 Future<String?> getToken() async {
   String? tempAccessToken = AppConstants.accessToken;
-  print("tempAccessToken");
-  print(tempAccessToken);
+  // print("tempAccessToken");
+  // print(tempAccessToken);
   if (tempAccessToken != null && isTokenValid(tempAccessToken)) {
     print("returning temp access toklen");
     return tempAccessToken;
@@ -61,8 +61,8 @@ Future<String?> getToken() async {
   // String? existingToken = AppConstants.accessToken;
   // String? refreshToken = AppConstants.refreshToken;
   // if (existingToken == null) {
-  print(refreshToken);
-  print(accessToken);
+  // print(refreshToken);
+  // print(accessToken);
   // print(refreshToken! + accessToken!);
   if (accessToken != null) {
     // Codec<String, String> stringToBase64 = utf8.fuse(base64);
@@ -72,8 +72,8 @@ Future<String?> getToken() async {
     // DateTime utcNow = now.toUtc(); // Convert local time to UTC
     // int epochTime = utcNow.millisecondsSinceEpoch;
     if (isTokenValid(accessToken)) {
-      print("valid tplem");
-      print(accessToken);
+      // print("valid tplem");
+      // print(accessToken);
       return accessToken;
     } else {
       if (refreshToken != null) {

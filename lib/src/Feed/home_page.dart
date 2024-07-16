@@ -4,6 +4,7 @@ import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import '../Post/post_component.dart';
 import '../Storage/feed.dart';
 import '../Post/new_post.dart';
 import '../Utils/Location.dart';
@@ -26,12 +27,18 @@ class _HomepageState extends State<Homepage> {
     postsGenerate();
   }
 
-  void postsGenerate() async {
-    var postIds = await getRelevantPostIds();
+  void postsGenerate({bool loadSeen = true}) async {
+    var postIds = await getRelevantPostIds(loadSeen: loadSeen);
     print(postIds);
     for (var i in postIds) {
-      getPostContent(i);
+      getPostContent(i, posts.length + postIds.length);
     }
+  }
+
+  Future<void> loadMore() async {
+    posts.removeLast();
+    print("TAPPED LOAD MORE ");
+    postsGenerate(loadSeen: false);
   }
 
   // Future<Map<String, dynamic>> getContent(String postId) async {
@@ -47,7 +54,7 @@ class _HomepageState extends State<Homepage> {
   //   return res;
   // }
 
-  Future<void> getPostContent(String postId) async {
+  Future<void> getPostContent(String postId, int totalPosts) async {
     await getContent(postId).then((value) {
       print("adding post - $postId");
       // postsTemp.add(ListTile(
@@ -60,19 +67,24 @@ class _HomepageState extends State<Homepage> {
       // print(postsTemp);
       setState(() {
         // print(posts);
-        posts.add(ListTile(
-          title: Text(value["post"]["content"]),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: SizedBox.fromSize(
-              size: const Size.fromRadius(48), // Image radius
-              child: Image.network(
-                'https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png',
-                fit: BoxFit.cover,
+        posts.add(
+          PostComponent(
+            content: value["post"]["content"],
+            image:
+                "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          ),
+        );
+
+        if (totalPosts == posts.length) {
+          posts.add(
+            TextButton(
+              onPressed: loadMore,
+              child: const Text(
+                "Load More",
               ),
             ),
-          ),
-        ));
+          );
+        }
       });
     });
   }
@@ -99,17 +111,25 @@ class _HomepageState extends State<Homepage> {
             )
           ],
         ),
-        body: Column(children: [
-          Flexible(
-            child: Scaffold(
-              body: ListView.builder(
-                  itemCount: posts.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return posts[index];
-                  }),
+        body: Column(
+          children: [
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                "Refresh",
+              ),
             ),
-          )
-        ]),
+            Flexible(
+              child: Scaffold(
+                body: ListView.builder(
+                    itemCount: posts.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return posts[index];
+                    }),
+              ),
+            ),
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
             elevation: 0.0,
             backgroundColor: const Color(0xFFE57373),

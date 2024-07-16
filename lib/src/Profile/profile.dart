@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:burgher/src/Post/post_component.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../Utils/api.dart';
@@ -43,21 +44,21 @@ class _ProfileState extends State<Profile> {
     posts = [];
     for (var i in rows) {
       posts.add(
-        ListTile(
-          title: Text(i["post"]["content"]),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: SizedBox.fromSize(
-              size: const Size.fromRadius(48), // Image radius
-              child: Image.network(
-                'https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+        PostComponent(
+          content: i["post"]["content"],
+          image:
+              "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
         ),
       );
     }
+    posts.add(
+      TextButton(
+        child: const Text(
+          "Load More",
+        ),
+        onPressed: () {},
+      ),
+    );
     setState(() {});
   }
 
@@ -151,6 +152,12 @@ class _ProfileState extends State<Profile> {
               },
             ),
           ),
+          // TextButton(
+          //   child: const Text(
+          //     "Load More",
+          //   ),
+          //   onPressed: () {},
+          // ),
         ],
       ),
     );

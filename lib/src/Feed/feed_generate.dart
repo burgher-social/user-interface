@@ -6,8 +6,8 @@ import '../Utils/api.dart';
 
 List<Widget> posts = [];
 List<Widget> postsTemp = [];
-Future<List<String>> getRelevantPostIds() async {
-  List<String> postsfromDb = await getPostIds(0, 20);
+Future<List<String>> getRelevantPostIds({bool loadSeen = true}) async {
+  List<String> postsfromDb = await getPostIds(0, 40);
   if (postsfromDb.isEmpty) {
     try {
       var resp = await callApi(
@@ -22,9 +22,11 @@ Future<List<String>> getRelevantPostIds() async {
           List<Map<String, dynamic>>.from(resp["response"]);
       print(rows);
       await generateFeed(rows);
-      postsfromDb = await getPostIds(0, 20);
-      if (postsfromDb.isEmpty) {
-        postsfromDb = await getPostIds(0, 20, isSeen: true);
+      postsfromDb = await getPostIds(0, 40);
+      if (postsfromDb.isEmpty && loadSeen) {
+        postsfromDb = await getPostIds(0, 40, isSeen: true);
+        print("SEEN POSTS LOADING");
+        print(postsfromDb);
       }
       print(resp);
     } catch (e) {

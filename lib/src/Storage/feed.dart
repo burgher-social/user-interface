@@ -44,7 +44,7 @@ Future<List<String>> getPostIds(int offset, int limit,
     {bool isSeen = false}) async {
   var thisdb = await getDb();
   var feed = await thisdb?.rawQuery(
-      "SELECT * FROM feed WHERE is_seen = ${isSeen ? "TRUE" : "FALSE"} ORDER BY score DESC LIMIT $limit OFFSET $offset; ");
+      "SELECT * FROM feed WHERE is_seen = ${isSeen ? "TRUE" : "FALSE"} ORDER BY score DESC, post_id DESC LIMIT $limit OFFSET $offset; ");
   var length = feed?.length ?? 0;
   List<String> posts = [];
   for (int i = 0; i < length; ++i) {
@@ -68,6 +68,7 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
     // print("GOT DB");
   }
   try {
+    print("GENERATING FEED");
     for (var row in posts) {
       await db?.rawQuery(
         "INSERT OR IGNORE INTO feed (post_id, score, is_seen, created_at) VALUES (?, ?, ?, ?)",
@@ -78,7 +79,7 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
           row['timestamp'],
         ],
       );
-      // print(row);
+      print(row);
     }
     // var a = await getPostIds(0, 20);
     // print("INSERTED DATA");
