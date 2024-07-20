@@ -41,8 +41,8 @@ class _LocationState extends State<Location> {
   @override
   Widget build(BuildContext context) {
     if (!locPer) {
-      return Column(
-        children: const [
+      return const Column(
+        children: [
           Text(
             "Need location access to continue",
           ),

@@ -1,22 +1,54 @@
+import 'package:burgher/src/Post/comments.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 
 class PostComponent extends StatefulWidget {
-  const PostComponent({super.key, required this.content, required this.image});
+  const PostComponent(
+      {super.key,
+      this.recognizePost = true,
+      required this.content,
+      required this.image,
+      required this.postId});
   final String content;
   final String image;
+  final String postId;
+  final bool recognizePost;
   @override
   State<PostComponent> createState() => _PostComponentState();
 }
 
 class _PostComponentState extends State<PostComponent> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.recognizePost) {
+      com = openComments;
+    }
+  }
+
+  void Function()? com;
+  Future<void> openComments() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Comments(
+          content: widget.content,
+          image: widget.image,
+          postId: widget.postId,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       child: Column(
         children: [
           ListTile(
+            onTap: com,
             title: Text(
               widget.content,
             ),
@@ -43,9 +75,9 @@ class _PostComponentState extends State<PostComponent> {
             // subtitle:
           ),
           const SizedBox(height: 8),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            children: const [
+            children: [
               SizedBox(width: 60),
               Icon(
                 Icons.favorite,

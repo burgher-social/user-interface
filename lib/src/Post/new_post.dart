@@ -73,16 +73,16 @@ class _NewPostState extends State<NewPost> {
             child: const Icon(Icons.send),
           )
       ]),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        backgroundColor: const Color(0xFFE57373),
-        onPressed: () {
-          print("Hello");
-        },
-        child: const Icon(
-          Icons.add,
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   elevation: 0.0,
+      //   backgroundColor: const Color(0xFFE57373),
+      //   onPressed: () {
+      //     print("Hello");
+      //   },
+      //   child: const Icon(
+      //     Icons.add,
+      //   ),
+      // ),
     );
   }
 }

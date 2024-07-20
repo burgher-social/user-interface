@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:flutter/material.dart';
 
 import '../Storage/feed.dart';
@@ -6,29 +7,23 @@ import '../Utils/api.dart';
 
 List<Widget> posts = [];
 List<Widget> postsTemp = [];
-Future<List<String>> getRelevantPostIds({bool loadSeen = true}) async {
-  List<String> postsfromDb = await getPostIds(0, 40);
+int lim = 5;
+
+Future<List<String>> getRelevantPostIds() async {
+  int offs = int.parse(localStorage.getItem("offset") ?? "0");
+  List<String> postsfromDb = await getPostIds(offs, offs + lim);
+  localStorage.setItem("offset", (offs + lim).toString());
   if (postsfromDb.isEmpty) {
     try {
-      var resp = await callApi(
-        "/feed/read",
-        true,
-        {
-          "offset": 0,
-          "limit": 100,
-        },
-      );
-      List<Map<String, dynamic>> rows =
-          List<Map<String, dynamic>>.from(resp["response"]);
-      print(rows);
-      await generateFeed(rows);
-      postsfromDb = await getPostIds(0, 40);
-      if (postsfromDb.isEmpty && loadSeen) {
-        postsfromDb = await getPostIds(0, 40, isSeen: true);
-        print("SEEN POSTS LOADING");
-        print(postsfromDb);
-      }
-      print(resp);
+      await refrestContent();
+      postsfromDb = await getPostIds(offs, offs + lim);
+
+      // if (postsfromDb.isEmpty && loadSeen) {
+      //   postsfromDb = await getPostIds(0, 40, isSeen: true);
+      //   print("SEEN POSTS LOADING");
+      //   print(postsfromDb);
+      // }
+      // print(resp);
     } catch (e) {
       print(e);
     }
@@ -48,6 +43,20 @@ Future<List<String>> getRelevantPostIds({bool loadSeen = true}) async {
   // setState(() {
   //   posts = postst;
   // });
+}
+
+Future<void> refrestContent() async {
+  var resp = await callApi(
+    "/feed/read",
+    true,
+    {
+      "offset": 0,
+      "limit": 100,
+    },
+  );
+  List<Map<String, dynamic>> rows =
+      List<Map<String, dynamic>>.from(resp["response"]);
+  await generateFeed(rows);
 }
 
 Future<Map<String, dynamic>> getContent(String postId) async {

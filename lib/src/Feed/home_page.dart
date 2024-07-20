@@ -4,6 +4,7 @@ import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:localstorage/localstorage.dart';
 import '../Post/post_component.dart';
 import '../Storage/feed.dart';
 import '../Post/new_post.dart';
@@ -27,18 +28,26 @@ class _HomepageState extends State<Homepage> {
     postsGenerate();
   }
 
-  void postsGenerate({bool loadSeen = true}) async {
-    var postIds = await getRelevantPostIds(loadSeen: loadSeen);
+  Future<void> postsGenerate() async {
+    var postIds = await getRelevantPostIds();
     print(postIds);
     for (var i in postIds) {
       getPostContent(i, posts.length + postIds.length);
     }
   }
 
+  Future<void> refreshFeed() async {
+    int tot = int.parse(localStorage.getItem("offset") ?? "0");
+    await markSeenBatch(tot);
+    localStorage.setItem("offset", "0");
+    await refrestContent();
+    postsGenerate();
+  }
+
   Future<void> loadMore() async {
-    posts.removeLast();
     print("TAPPED LOAD MORE ");
-    postsGenerate(loadSeen: false);
+    await postsGenerate();
+    // posts.removeLast();
   }
 
   // Future<Map<String, dynamic>> getContent(String postId) async {
@@ -61,38 +70,37 @@ class _HomepageState extends State<Homepage> {
       // title: Text(value["post"]["content"]),
       // leading: Text(postId),
       // ));
-      markSeen(postId);
-      print("Marked seeb");
+      // markSeen(postId);
+      // print("Marked seeb");
       print(posts);
       // print(postsTemp);
-      setState(() {
-        // print(posts);
-        posts.add(
-          PostComponent(
-            content: value["post"]["content"],
-            image:
-                "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
-          ),
-        );
-
-        if (totalPosts == posts.length) {
-          posts.add(
-            TextButton(
-              onPressed: loadMore,
-              child: const Text(
-                "Load More",
-              ),
-            ),
-          );
-        }
-      });
+      posts.add(
+        PostComponent(
+          content: value["post"]["content"],
+          image:
+              "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          postId: value["post"]["id"],
+        ),
+      );
+      if (totalPosts == posts.length) {
+        // posts.add(
+        //   TextButton(
+        //     onPressed: loadMore,
+        //     child: const Text(
+        //       "Load More",
+        //     ),
+        //   ),
+        // );
+      }
+    });
+    setState(() {
+      // print(posts);
+      posts = posts;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // postsGenerate();
-    print("building");
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -114,7 +122,7 @@ class _HomepageState extends State<Homepage> {
         body: Column(
           children: [
             TextButton(
-              onPressed: () {},
+              onPressed: refreshFeed,
               child: const Text(
                 "Refresh",
               ),
@@ -122,10 +130,22 @@ class _HomepageState extends State<Homepage> {
             Flexible(
               child: Scaffold(
                 body: ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return posts[index];
-                    }),
+                  itemCount: posts.length + 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (posts.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    if (posts.length == index) {
+                      return TextButton(
+                        onPressed: loadMore,
+                        child: const Text(
+                          "Load More",
+                        ),
+                      );
+                    }
+                    return posts[index];
+                  },
+                ),
               ),
             ),
           ],

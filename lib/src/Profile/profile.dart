@@ -48,6 +48,7 @@ class _ProfileState extends State<Profile> {
           content: i["post"]["content"],
           image:
               "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          postId: i["post"]["id"],
         ),
       );
     }

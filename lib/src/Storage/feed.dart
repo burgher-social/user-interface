@@ -44,11 +44,11 @@ Future<List<String>> getPostIds(int offset, int limit,
     {bool isSeen = false}) async {
   var thisdb = await getDb();
   var feed = await thisdb?.rawQuery(
-      "SELECT * FROM feed WHERE is_seen = ${isSeen ? "TRUE" : "FALSE"} ORDER BY score DESC, post_id DESC LIMIT $limit OFFSET $offset; ");
+      "SELECT * FROM feed ORDER BY is_seen DESC, score DESC, post_id DESC LIMIT $limit OFFSET $offset; ");
   var length = feed?.length ?? 0;
   List<String> posts = [];
   for (int i = 0; i < length; ++i) {
-    print(feed?[i]);
+    // print(feed?[i]);
     var str = feed?[i]["post_id"].toString();
     if (str != null) posts.add(str);
   }
@@ -118,4 +118,12 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
   // } catch (e) {
   //   print(e);
   // }
+}
+
+Future<void> markSeenBatch(int tot) async {
+  final topNRows = await getPostIds(0, tot);
+
+  for (var row in topNRows) {
+    await markSeen(row);
+  }
 }

@@ -21,6 +21,7 @@ dependencies:
   sqflite_common_ffi: any
   sqflite_common_ffi_web: any
   flutter_secure_storage: ^8.1.0
+  localstorage: ^5.0.0
   http: ^0.13.6
 
 dev_dependencies:
