@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "364535468864",
+    "project_id": "burgher-f45b8",
+    "storage_bucket": "burgher-f45b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364535468864:android:362641c3c35c5cf2a360a5",
+        "android_client_info": {
+          "package_name": "com.burgher.burgher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364535468864-ecq72in9sq2kg401dac361153ob76bqc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.burgher.burgher",
+            "certificate_hash": "13d4fa1973dde843f831021ddc74e7fa44029643"
+          }
+        },
+        {
+          "client_id": "364535468864-e0pks7i999ig2a0f86rrdssmv7kc6vrg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpKDCcUVMXAcYvozby6KNlRY90AlfEke0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364535468864-0k1lni5d5p8gujjgceush368ed2iuljh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "364535468864-m0qp4nfbgb0qe9v0ejic0irsmejmsndu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.burgher.burgher"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

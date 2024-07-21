@@ -1,14 +1,10 @@
 import 'package:burgher/src/Feed/feed_generate.dart';
-import 'package:burgher/src/Location/location_helper.dart';
-import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:localstorage/localstorage.dart';
+import '../Config/global.dart';
 import '../Post/post_component.dart';
 import '../Storage/feed.dart';
 import '../Post/new_post.dart';
-import '../Utils/Location.dart';
 import "../Profile/profile.dart";
 
 class Homepage extends StatefulWidget {
@@ -37,6 +33,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   Future<void> refreshFeed() async {
+    posts = [];
     int tot = int.parse(localStorage.getItem("offset") ?? "0");
     await markSeenBatch(tot);
     localStorage.setItem("offset", "0");
@@ -73,13 +70,15 @@ class _HomepageState extends State<Homepage> {
       // markSeen(postId);
       // print("Marked seeb");
       print(posts);
+      print(value);
       // print(postsTemp);
       posts.add(
         PostComponent(
           content: value["post"]["content"],
-          image:
-              "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          image: value["user"]["imageUrl"],
           postId: value["post"]["id"],
+          userId: value["post"]["userId"],
+          username: value["user"]["username"],
         ),
       );
       if (totalPosts == posts.length) {
@@ -102,17 +101,22 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Application",
+            "Burgher",
           ),
           actions: [
             ElevatedButton(
               onPressed: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Profile()),
+                  MaterialPageRoute(
+                    builder: (context) => Profile(
+                      userId: AppConstants.userId,
+                    ),
+                  ),
                 );
               },
               child: const Icon(Icons.person),

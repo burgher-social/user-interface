@@ -8,7 +8,11 @@ import 'package:image_picker/image_picker.dart';
 import '../Utils/api.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  const Profile({
+    super.key,
+    @required this.userId,
+  });
+  final String? userId;
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -17,27 +21,43 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   File? image;
   List<Widget> posts = [];
+  String? username;
+  String? tag;
+  String? imageUrl;
+  bool profileFetched = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getUserPosts();
+    getUser();
   }
 
   updateUserImage(File image) async {
     try {
-      if (image != null) {
-        await callFormData("/user/profile/image/upload", image);
-      }
-    } catch (e) {
+      await callFormData("/user/profile/image/upload", image, true);
+        } catch (e) {
       print(e);
     }
   }
 
+  getUser() async {
+    var res = await callApi("/user/read", false, {
+      "userId": widget.userId,
+    });
+    imageUrl = res["imageUrl"];
+    username = res["username"];
+    tag = res["tag"].toString();
+    profileFetched = true;
+    print(res);
+    print("PROFILE FETCHED");
+    setState(() {});
+  }
+
   getUserPosts() async {
-    var res = await callApi("post/read", false, {
-      "userId": ".O1JafnACwuLr3xxTJ6",
+    var res = await callApi("/post/read", false, {
+      "userId": widget.userId,
     });
     List<Map<String, dynamic>> rows =
         List<Map<String, dynamic>>.from(res["response"]);
@@ -46,9 +66,10 @@ class _ProfileState extends State<Profile> {
       posts.add(
         PostComponent(
           content: i["post"]["content"],
-          image:
-              "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          image: i["user"]["imageUrl"],
           postId: i["post"]["id"],
+          username: i["user"]["username"],
+          userId: i["post"]["userId"],
         ),
       );
     }
@@ -68,99 +89,101 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       // extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          "New Post",
-        ),
+        // title: const Text(
+        //   "New Post",
+        // ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Column(
-        // crossAxisAlignment: CrossAxisAlignment.end,2
-        children: [
-          Row(
-            children: [
-              InkWell(
-                onTap: () async {
-                  try {
-                    final image = await ImagePicker()
-                        .pickImage(source: ImageSource.gallery);
-                    if (image == null) return;
-                    // final imageTemp = File(imag, .e. ,image.path);
-                    final file = File(image.path);
-                    setState(() {
-                      this.image = file;
-                    });
-                    print(image);
-                    updateUserImage(file);
-                  } catch (e) {
-                    print(e);
-                  }
-                },
-                child: Container(
+      body: !profileFetched
+          ? Container()
+          : Column(
+              // crossAxisAlignment: CrossAxisAlignment.end,2
+              children: [
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () async {
+                        try {
+                          final image = await ImagePicker()
+                              .pickImage(source: ImageSource.gallery);
+                          if (image == null) return;
+                          // final imageTemp = File(imag, .e. ,image.path);
+                          final file = File(image.path);
+                          setState(() {
+                            this.image = file;
+                          });
+                          print(image);
+                          updateUserImage(file);
+                        } catch (e) {
+                          print(e);
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                          left: 20.0,
+                          right: 20.0,
+                        ),
+                        // padding: EdgeInsets.all(0.2), // Border width
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: SizedBox.fromSize(
+                            size: const Size.fromRadius(48), // Image radius
+                            child: Image.network(
+                              imageUrl!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
                   margin: const EdgeInsets.only(
                     left: 20.0,
                     right: 20.0,
+                    bottom: 10.0,
+                    top: 10.0,
                   ),
-                  // padding: EdgeInsets.all(0.2), // Border width
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: SizedBox.fromSize(
-                      size: const Size.fromRadius(48), // Image radius
-                      child: Image.network(
-                        'https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png',
-                        fit: BoxFit.cover,
+                  child: Row(
+                    children: [
+                      Text(
+                        username!,
                       ),
-                    ),
+                      Text(
+                        "#",
+                      ),
+                      Text(
+                        tag!,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          Container(
-            margin: const EdgeInsets.only(
-              left: 20.0,
-              right: 20.0,
-              bottom: 10.0,
-              top: 10.0,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  "UserHandle",
+                Divider(
+                  color: Colors.black,
                 ),
-                Text(
-                  "#",
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: posts.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return posts[index];
+                    },
+                  ),
                 ),
-                Text(
-                  "1000",
-                ),
+                // TextButton(
+                //   child: const Text(
+                //     "Load More",
+                //   ),
+                //   onPressed: () {},
+                // ),
               ],
             ),
-          ),
-          Divider(
-            color: Colors.black,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (BuildContext context, int index) {
-                return posts[index];
-              },
-            ),
-          ),
-          // TextButton(
-          //   child: const Text(
-          //     "Load More",
-          //   ),
-          //   onPressed: () {},
-          // ),
-        ],
-      ),
     );
   }
 }

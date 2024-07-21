@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import '../Storage//feed.dart';
 import '../Utils/api.dart';
 
 class NewPost extends StatefulWidget {

@@ -1,15 +1,14 @@
 import 'package:burgher/src/Feed/home_page.dart';
+import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'auth.dart';
 import '../Location/location_helper.dart';
 
 class Create extends StatefulWidget {
-  const Create({super.key, @required this.email});
+  const Create(
+      {super.key, @required this.email, @required this.firebaseAuthToken});
   final String? email;
+  final String? firebaseAuthToken;
 
   @override
   State<Create> createState() => _CreateState();
@@ -25,6 +24,7 @@ class _CreateState extends State<Create> {
     // TODO: implement initState
     super.initState();
     print(widget.email);
+    print(widget.firebaseAuthToken);
     // a();
   }
 
@@ -58,37 +58,41 @@ class _CreateState extends State<Create> {
     print(_usernameController.text);
     print(int.parse(_tagController.text));
     try {
-      var url = Uri.http('localhost:8080', '/user/create');
-      print(url);
+      var response = await callApi('/user/create', false, {
+        'email': widget.email,
+        'tag': int.parse(_tagController.text),
+        "username": _usernameController.text,
+        "name": _nameController.text,
+        "firebaseAuthIdToken": widget.firebaseAuthToken
+      });
+      // var url = Uri.http('localhost:8080', '/user/create');
+      // print(url);
       // var response = await http.post(url, body: {
       //   'email': 'shobhit@email.com',
       //   'tag': int.parse(_tagController.text),
       //   "username": _usernameController.text,
       //   "name": _nameController.text
       // });
-      var response = await http.post(url,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode({
-            'email': widget.email,
-            'tag': int.parse(_tagController.text),
-            "username": _usernameController.text,
-            "name": _nameController.text
-          }));
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      var jsonbpdy = json.decode(response.body);
-      print(jsonbpdy);
-      print(jsonbpdy["accessToken"]);
-      await saveToken(jsonbpdy["accessToken"], jsonbpdy["refreshToken"]);
+      // var response = await http.post(url,
+      //     headers: {"Content-Type": "application/json"},
+      //     body: json.encode({
+      //       'email': widget.email,
+      //       'tag': int.parse(_tagController.text),
+      //       "username": _usernameController.text,
+      //       "name": _nameController.text
+      //     }));
+      if (response["accessToken"] == null) {
+        return;
+      }
+      await saveToken(response["accessToken"], response["refreshToken"]);
       await updateLocation();
       // print(await http.read(Ur i.https('example.com', 'foobar.txt')));
+      setState(() {
+        _createdUser = true;
+      });
     } catch (e) {
       print(e);
     }
-
-    setState(() {
-      _createdUser = true;
-    });
   }
 
   @override

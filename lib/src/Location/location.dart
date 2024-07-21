@@ -1,8 +1,5 @@
 import 'package:burgher/src/Profile/Login.dart';
-import 'package:burgher/src/Utils/Location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 
 import 'location_helper.dart';
 

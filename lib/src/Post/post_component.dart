@@ -1,7 +1,7 @@
 import 'package:burgher/src/Post/comments.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
+
+import '../Profile/profile.dart';
 
 class PostComponent extends StatefulWidget {
   const PostComponent(
@@ -9,11 +9,15 @@ class PostComponent extends StatefulWidget {
       this.recognizePost = true,
       required this.content,
       required this.image,
+      required this.username,
+      required this.userId,
       required this.postId});
   final String content;
   final String image;
   final String postId;
   final bool recognizePost;
+  final String username;
+  final String userId;
   @override
   State<PostComponent> createState() => _PostComponentState();
 }
@@ -37,6 +41,8 @@ class _PostComponentState extends State<PostComponent> {
           content: widget.content,
           image: widget.image,
           postId: widget.postId,
+          userId: widget.userId,
+          username: widget.username,
         ),
       ),
     );
@@ -49,17 +55,30 @@ class _PostComponentState extends State<PostComponent> {
         children: [
           ListTile(
             onTap: com,
-            title: Text(
+            title: Text(widget.username),
+            subtitle: Text(
               widget.content,
             ),
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: Image.network(
-                widget.image,
-                height: 40.0,
-                width: 40.0,
-                fit: BoxFit.fill,
+            leading: GestureDetector(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image.network(
+                  widget.image,
+                  height: 40.0,
+                  width: 40.0,
+                  fit: BoxFit.fill,
+                ),
               ),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Profile(
+                      userId: widget.userId,
+                    ),
+                  ),
+                );
+              },
             ),
             // CircleAvatar(
             //   // radius: 100,

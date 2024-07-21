@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:burgher/src/Config/global.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-
+import 'package:path/path.dart';
 import '../Profile/Auth.dart';
 
 Future<Map<String, dynamic>> callApi(
     String path, bool useAuth, Map<String, dynamic>? body) async {
-  var url = Uri.http('localhost:8080', path);
+  var url = AppConstants.protocol(AppConstants.baseurl, path);
   print(body);
   print(url);
   // var response = await http.post(url, body: {
@@ -38,20 +38,37 @@ Future<Map<String, dynamic>> callApi(
   return decoded;
 }
 
-Future<void> callFormData(String path, File file) async {
+Future<void> callFormData(String path, File file, bool useAuth) async {
   print(file);
   final bytes = file.readAsBytes();
   print(bytes);
-  var url = Uri.http('localhost:8080', path);
+  Map<String, String> headers = {"Content-Type": "multipart/form-data"};
+  if (useAuth) {
+    print(AppConstants.accessToken);
+    headers["Authorization"] = (AppConstants.accessToken ?? await getToken())!;
+    //TODO: if this returns null, redirect to sign in page.
+  }
+  var url = AppConstants.protocol(AppConstants.baseurl, path);
   var request = http.MultipartRequest("POST", url);
-
-  request.files.add(
-    http.MultipartFile(
-      'file',
-      bytes.asStream(),
-      file.lengthSync(),
-    ),
-  );
-  var resp = await request.send();
-  print(resp);
+  print(bytes.asStream());
+  final httpImage = http.MultipartFile.fromBytes('file', await bytes,
+      filename: basename(file.path));
+  // request.files.add(
+  //   http.MultipartFile(
+  //     'file',
+  //     bytes.asStream(),
+  //     file.lengthSync(),
+  //   ),
+  // );
+  request.files.add(httpImage);
+  request.headers.addAll(headers);
+  print(request.files);
+  print("Sending image on network");
+  try {
+    var resp = await request.send();
+    print(utf8.decode(await resp.stream.toBytes()));
+  } catch (e, stk) {
+    print(e);
+    print(stk);
+  }
 }

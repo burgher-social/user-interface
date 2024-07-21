@@ -1,13 +1,15 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 Database? db;
 Future<Database?> getDb() async {
   try {
     if (db != null) return db;
     sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfiWeb;
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+    }
     db ??= await openDatabase('my_db.db', version: 1,
         onCreate: (Database db, int version) async {
       print("Creating tabke");

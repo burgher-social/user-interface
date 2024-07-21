@@ -1,8 +1,6 @@
-import 'dart:convert';
 
 import 'package:burgher/src/Profile/auth.dart';
 
-import '../Storage/user.dart';
 
 Future<bool> checkAlreadySignedInHelper() async {
   // var user = await getUser();

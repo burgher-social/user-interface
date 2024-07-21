@@ -1,17 +1,25 @@
-import 'package:burgher/src/Config/global.dart';
 import 'package:burgher/src/Profile/auth.dart';
-import 'package:burgher/src/Utils/Location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import '../Location/location_helper.dart';
 import '../Storage/user.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'dart:convert';
-import '../Storage/local.dart' as local_storage;
 import '../Feed/home_page.dart';
 import 'create.dart';
 import '../Utils/api.dart';
 import 'login_handler.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+const List<String> scopes = <String>[
+  'https://www.googleapis.com/auth/userinfo.email',
+  "https://www.googleapis.com/auth/userinfo.profile",
+];
+
+// GoogleSignIn _googleSignIn = GoogleSignIn(
+//   // Optional clientId
+//   clientId:
+//       '364535468864-0k1lni5d5p8gujjgceush368ed2iuljh.apps.googleusercontent.com',
+//   scopes: scopes,
+// );
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -24,7 +32,8 @@ class _LoginState extends State<Login> {
   bool checkedState = false;
   bool isLoggedIn = false;
   bool isNewUser = false;
-  String email = "email@flutter.com";
+  String? email;
+  String? firebaseAuthToken;
   @override
   void initState() {
     super.initState();
@@ -78,16 +87,43 @@ class _LoginState extends State<Login> {
     // return false;
   }
 
+  Future<(UserCredential, String?)> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    print("GETTING LOGIN INFO");
+    // print(res);
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+    var res = await FirebaseAuth.instance.signInWithCredential(credential);
+    var res2 = await FirebaseAuth.instance.currentUser?.getIdToken();
+    print(res2);
+    print("");
+    print("");
+    print("");
+    print(res);
+
+    return (res, res2);
+  }
+
   Future<void> signInWithGoogleHelper() async {
     print("signed in with google");
-    var email = "email@flutter.com";
     Map<String, dynamic> body = {};
+    var (signInInfo, idtok) = await signInWithGoogle();
+    firebaseAuthToken = idtok;
+    email = signInInfo.additionalUserInfo?.profile?["email"];
     try {
       body = await callApi(
         "user/read/email",
         false,
         {
-          "email": email,
+          "email": signInInfo.additionalUserInfo?.profile?["email"],
+          "accessToken": signInInfo.credential?.accessToken,
+          "profilePicture": signInInfo.additionalUserInfo?.profile?["picture"],
         },
       );
     } catch (e) {
@@ -142,6 +178,7 @@ class _LoginState extends State<Login> {
       if (isNewUser) {
         return Create(
           email: email,
+          firebaseAuthToken: firebaseAuthToken,
         );
       }
       if (isLoggedIn) {

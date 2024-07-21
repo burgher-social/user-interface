@@ -1,6 +1,5 @@
 import 'package:burgher/src/Post/post_component.dart';
 import 'package:burgher/src/Utils/api.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Comments extends StatefulWidget {
@@ -8,10 +7,14 @@ class Comments extends StatefulWidget {
       {super.key,
       required this.content,
       required this.image,
+      required this.username,
+      required this.userId,
       required this.postId});
   final String content;
   final String image;
   final String postId;
+  final String username;
+  final String userId;
 
   @override
   State<Comments> createState() => _CommentsState();
@@ -66,10 +69,11 @@ class _CommentsState extends State<Comments> {
       comments.add(
         PostComponent(
           content: i["post"]["content"],
-          image:
-              "https://miro.medium.com/v2/resize:fit:720/format:webp/1*EOOeLlRAPdk2k4krTI5HIg.png",
+          image: i["user"]["imageUrl"],
           postId: i["post"]["id"],
           recognizePost: false,
+          username: i["user"]["username"],
+          userId: i["post"]["userId"],
         ),
       );
       setState(() {});
@@ -86,6 +90,8 @@ class _CommentsState extends State<Comments> {
             content: widget.content,
             image: widget.image,
             postId: widget.postId,
+            userId: widget.userId,
+            username: widget.username,
           ),
           Flexible(
             child: Scaffold(

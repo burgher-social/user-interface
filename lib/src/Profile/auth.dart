@@ -42,6 +42,7 @@ bool isTokenValid(String token) {
   DateTime utcNow = now.toUtc(); // Convert local time to UTC
   int epochTime = (utcNow.millisecondsSinceEpoch / 1000).round();
   if (jsonToken["exp"] > epochTime) {
+    AppConstants.userId = jsonToken["userId"];
     print("TOKEN VALID!");
     return true;
   }
@@ -85,7 +86,8 @@ Future<String?> getToken() async {
         if (isTokenValid(refreshToken)) {
           print("valid refrest");
           print(refreshToken);
-          var url = Uri.http('localhost:8080', '/token/refresh');
+          var url =
+              AppConstants.protocol(AppConstants.baseurl, '/token/refresh');
           print(url);
           var response = await http.post(
             url,
@@ -103,7 +105,7 @@ Future<String?> getToken() async {
           print(resp);
           print("resp for token refresh");
           try {
-            saveToken(resp["accessToken"], resp["refreshToken"]);
+            await saveToken(resp["accessToken"], resp["refreshToken"]);
           } catch (e) {
             print(e);
           }
