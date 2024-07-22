@@ -12,6 +12,8 @@ class Comments extends StatefulWidget {
     required this.postId,
     this.latitude,
     this.longitude,
+    this.likeCount,
+    this.commentCount,
   });
   final String content;
   final String image;
@@ -21,6 +23,9 @@ class Comments extends StatefulWidget {
 
   final double? latitude;
   final double? longitude;
+
+  final int? likeCount;
+  final int? commentCount;
   @override
   State<Comments> createState() => _CommentsState();
 }
@@ -28,12 +33,17 @@ class Comments extends StatefulWidget {
 class _CommentsState extends State<Comments> {
   String? content;
   bool loading = true;
+  int likesCount = 0;
+  int commentsCount = 0;
   var comments = [];
   final fieldText = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    likesCount = widget.likeCount ?? 0;
+    commentsCount = widget.commentCount ?? 0;
+
     getComments();
   }
 
@@ -63,9 +73,12 @@ class _CommentsState extends State<Comments> {
           userId: widget.userId,
           latitude: widget.latitude,
           longitude: widget.longitude,
+          likeCount: 0,
+          commentCount: 0,
         ),
       );
       loading = false;
+      likesCount++;
       setState(() {});
       // print(resp);
     } catch (e) {
@@ -105,6 +118,8 @@ class _CommentsState extends State<Comments> {
           userId: i["post"]["userId"],
           latitude: i["location"]["latitude"],
           longitude: i["location"]["longitude"],
+          likeCount: i["insights"]["likes"],
+          commentCount: i["insights"]["comments"],
         ),
       );
     }
@@ -126,6 +141,8 @@ class _CommentsState extends State<Comments> {
             username: widget.username,
             latitude: widget.latitude,
             longitude: widget.longitude,
+            likeCount: likesCount,
+            commentCount: commentsCount,
           ),
           const SizedBox(height: 8),
           const Divider(

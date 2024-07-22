@@ -70,6 +70,8 @@ class _ProfileState extends State<Profile> {
           userId: i["post"]["userId"],
           latitude: i["location"]["latitude"],
           longitude: i["location"]["longitude"],
+          likeCount: i["insights"]["likes"],
+          commentCount: i["insights"]["comments"],
         ),
       );
     }

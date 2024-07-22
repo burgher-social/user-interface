@@ -72,7 +72,6 @@ class _HomepageState extends State<Homepage> {
       // markSeen(postId);
       // print("Marked seeb");
       // print(postsTemp);
-      // print(value);
       posts.add(
         PostComponent(
           content: value["post"]["content"],
@@ -82,6 +81,8 @@ class _HomepageState extends State<Homepage> {
           username: value["user"]["username"],
           latitude: value["location"]["latitude"],
           longitude: value["location"]["longitude"],
+          likeCount: value["insights"]?["likes"],
+          commentCount: value["insights"]?["comments"],
         ),
       );
       // if (totalPosts == posts.length) {
@@ -94,7 +95,7 @@ class _HomepageState extends State<Homepage> {
       //   ),
       // );
       // }
-    });
+    }).catchError((e) => print(e));
     setState(() {
       // print(posts);
       posts = posts;

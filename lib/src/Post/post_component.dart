@@ -1,6 +1,7 @@
 import 'package:burgher/src/Config/global.dart';
 import 'package:burgher/src/Post/comments.dart';
 import 'package:burgher/src/Utils/Location.dart';
+import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 
 import '../Profile/profile.dart';
@@ -16,6 +17,8 @@ class PostComponent extends StatefulWidget {
     required this.postId,
     this.latitude,
     this.longitude,
+    this.likeCount,
+    this.commentCount,
   });
   final String content;
   final String image;
@@ -26,12 +29,17 @@ class PostComponent extends StatefulWidget {
 
   final double? latitude;
   final double? longitude;
+
+  final int? likeCount;
+  final int? commentCount;
   @override
   State<PostComponent> createState() => _PostComponentState();
 }
 
 class _PostComponentState extends State<PostComponent> {
   String? dist;
+  int likes = 0;
+  int comments = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -39,7 +47,23 @@ class _PostComponentState extends State<PostComponent> {
     if (widget.recognizePost) {
       com = openComments;
     }
+    likes = widget.likeCount ?? 0;
+    comments = widget.commentCount ?? 0;
     calculateDistanceHelper();
+  }
+
+  Future<void> likePost() async {
+    setState(() {
+      likes += 1;
+    });
+    callApi(
+      "/insights/like/add",
+      true,
+      {
+        "count": 1,
+        "postId": widget.postId,
+      },
+    );
   }
 
   Future<void> calculateDistanceHelper() async {
@@ -77,6 +101,8 @@ class _PostComponentState extends State<PostComponent> {
           username: widget.username,
           latitude: widget.latitude,
           longitude: widget.longitude,
+          likeCount: widget.likeCount,
+          commentCount: widget.commentCount,
         ),
       ),
     );
@@ -128,17 +154,32 @@ class _PostComponentState extends State<PostComponent> {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(width: 60),
-              Icon(
-                Icons.favorite,
+              const SizedBox(width: 60),
+              GestureDetector(
+                onTap: likePost,
+                child: const Icon(
+                  Icons.favorite,
+                  color: Color.fromARGB(255, 145, 13, 3),
+                ),
               ),
-              SizedBox(width: 20),
-              Icon(
-                Icons.comment,
+              const SizedBox(width: 3),
+              Text(
+                likes.toString(),
               ),
+              if (widget.recognizePost) ...[
+                const SizedBox(width: 20),
+                const Icon(
+                  Icons.comment,
+                  // color: Color.fromARGB(0, 0, 0, .0),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  comments.toString(),
+                ),
+              ]
             ],
           ),
           const SizedBox(height: 8),
