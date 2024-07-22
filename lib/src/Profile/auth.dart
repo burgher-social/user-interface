@@ -6,29 +6,11 @@ import 'dart:convert';
 const storage = FlutterSecureStorage();
 Future<void> saveToken(String accessToken, String? refreshToken) async {
   try {
-    if (refreshToken != null) {
-      // const storage = FlutterSecureStorage();
-// Read value
-      // String? value = await storage.read(key: "refreshToken");
-      // print(value);
-
-// Read all values
-
-// Delete value
-      // await storage.delete(key: key);
-
-// Delete all
-      // await storage.deleteAll();
-
-// Write value
+    if (refreshToken != null && isTokenValid(refreshToken)) {
       await storage.write(key: "refreshToken", value: refreshToken);
       await storage.write(key: "accessToken", value: accessToken);
       AppConstants.refreshToken = refreshToken;
       AppConstants.accessToken = accessToken;
-      // print("written sage strefa");
-
-      // Map<String, String> allValues = await storage.readAll();
-      // print(allValues);
     }
   } catch (e) {
     print(e);
@@ -43,7 +25,6 @@ bool isTokenValid(String token) {
   int epochTime = (utcNow.millisecondsSinceEpoch / 1000).round();
   if (jsonToken["exp"] > epochTime) {
     AppConstants.userId = jsonToken["userId"];
-    print("TOKEN VALID!");
     return true;
   }
   return false;
@@ -54,7 +35,6 @@ Future<String?> getToken() async {
   // print("tempAccessToken");
   // print(tempAccessToken);
   if (tempAccessToken != null && isTokenValid(tempAccessToken)) {
-    print("returning temp access toklen");
     return tempAccessToken;
   }
   String? refreshToken = await storage.read(key: "refreshToken");
@@ -84,11 +64,8 @@ Future<String?> getToken() async {
         // DateTime utcNow = now.toUtc(); // Convert local time to UTC
         // int epochTime = utcNow.millisecondsSinceEpoch;
         if (isTokenValid(refreshToken)) {
-          print("valid refrest");
-          print(refreshToken);
           var url =
               AppConstants.protocol(AppConstants.baseurl, '/token/refresh');
-          print(url);
           var response = await http.post(
             url,
             headers: {
@@ -102,8 +79,6 @@ Future<String?> getToken() async {
           );
           if (response.statusCode == 401) return null;
           var resp = json.decode(response.body);
-          print(resp);
-          print("resp for token refresh");
           try {
             await saveToken(resp["accessToken"], resp["refreshToken"]);
           } catch (e) {
@@ -120,24 +95,4 @@ Future<String?> getToken() async {
     }
   }
   return null;
-  // if (refreshToken != null) {
-  //   var url = Uri.http('localhost:8080', '/token/refresh');
-  //   print(url);
-  //   var response = await http.post(
-  //     url,
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: json.encode(
-  //       {
-  //         "refreshToken": refreshToken,
-  //       },
-  //     ),
-  //   );
-  //   if (response.statusCode == 401) return null;
-  //   var resp = json.decode(response.body);
-  //   saveToken(resp["accessToken"], resp["refreshToken"]);
-  //   return resp["refreshToken"];
-  // }
-  // return null;
 }

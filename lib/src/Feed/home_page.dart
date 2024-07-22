@@ -1,4 +1,5 @@
 import 'package:burgher/src/Feed/feed_generate.dart';
+import 'package:burgher/src/Location/location_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import '../Config/global.dart';
@@ -39,6 +40,7 @@ class _HomepageState extends State<Homepage> {
     localStorage.setItem("offset", "0");
     await refrestContent();
     postsGenerate();
+    updateLocation();
   }
 
   Future<void> loadMore() async {
@@ -69,9 +71,8 @@ class _HomepageState extends State<Homepage> {
       // ));
       // markSeen(postId);
       // print("Marked seeb");
-      print(posts);
-      print(value);
       // print(postsTemp);
+      // print(value);
       posts.add(
         PostComponent(
           content: value["post"]["content"],
@@ -79,18 +80,20 @@ class _HomepageState extends State<Homepage> {
           postId: value["post"]["id"],
           userId: value["post"]["userId"],
           username: value["user"]["username"],
+          latitude: value["location"]["latitude"],
+          longitude: value["location"]["longitude"],
         ),
       );
-      if (totalPosts == posts.length) {
-        // posts.add(
-        //   TextButton(
-        //     onPressed: loadMore,
-        //     child: const Text(
-        //       "Load More",
-        //     ),
-        //   ),
-        // );
-      }
+      // if (totalPosts == posts.length) {
+      // posts.add(
+      //   TextButton(
+      //     onPressed: loadMore,
+      //     child: const Text(
+      //       "Load More",
+      //     ),
+      //   ),
+      // );
+      // }
     });
     setState(() {
       // print(posts);
@@ -105,7 +108,7 @@ class _HomepageState extends State<Homepage> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Burgher",
+            "Feed",
           ),
           actions: [
             ElevatedButton(
@@ -123,49 +126,52 @@ class _HomepageState extends State<Homepage> {
             )
           ],
         ),
-        body: Column(
-          children: [
-            TextButton(
-              onPressed: refreshFeed,
-              child: const Text(
-                "Refresh",
-              ),
-            ),
-            Flexible(
-              child: Scaffold(
-                body: ListView.builder(
-                  itemCount: posts.length + 1,
-                  itemBuilder: (BuildContext context, int index) {
-                    if (posts.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    if (posts.length == index) {
-                      return TextButton(
-                        onPressed: loadMore,
-                        child: const Text(
-                          "Load More",
-                        ),
-                      );
-                    }
-                    return posts[index];
-                  },
+        body: RefreshIndicator(
+          onRefresh: refreshFeed,
+          child: Column(
+            children: [
+              // TextButton(
+              //   onPressed: refreshFeed,
+              //   child: const Text(
+              //     "Refresh",
+              //   ),
+              // ),
+              Flexible(
+                child: Scaffold(
+                  body: ListView.builder(
+                    itemCount: posts.length + 1,
+                    itemBuilder: (BuildContext context, int index) {
+                      if (posts.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      if (posts.length == index) {
+                        return TextButton(
+                          onPressed: loadMore,
+                          child: const Text(
+                            "Load More",
+                          ),
+                        );
+                      }
+                      return posts[index];
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
-            elevation: 0.0,
-            backgroundColor: const Color(0xFFE57373),
-            child: const Icon(Icons.add),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NewPost()),
-              );
-              print("running setstate");
-              setState(() {});
-            }),
+          elevation: 0.0,
+          backgroundColor: const Color(0xFFE57373),
+          child: const Icon(Icons.add),
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NewPost()),
+            );
+            setState(() {});
+          },
+        ),
       ),
     );
   }

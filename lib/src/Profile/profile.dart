@@ -37,7 +37,7 @@ class _ProfileState extends State<Profile> {
   updateUserImage(File image) async {
     try {
       await callFormData("/user/profile/image/upload", image, true);
-        } catch (e) {
+    } catch (e) {
       print(e);
     }
   }
@@ -50,8 +50,6 @@ class _ProfileState extends State<Profile> {
     username = res["username"];
     tag = res["tag"].toString();
     profileFetched = true;
-    print(res);
-    print("PROFILE FETCHED");
     setState(() {});
   }
 
@@ -70,18 +68,36 @@ class _ProfileState extends State<Profile> {
           postId: i["post"]["id"],
           username: i["user"]["username"],
           userId: i["post"]["userId"],
+          latitude: i["location"]["latitude"],
+          longitude: i["location"]["longitude"],
         ),
       );
     }
-    posts.add(
-      TextButton(
-        child: const Text(
-          "Load More",
+    if (rows.isNotEmpty) {
+      posts.add(
+        TextButton(
+          child: const Text(
+            "Load More",
+          ),
+          onPressed: () {},
         ),
-        onPressed: () {},
-      ),
-    );
+      );
+    }
     setState(() {});
+  }
+
+  openImagePicker() async {
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+      final file = File(image.path);
+      setState(() {
+        this.image = file;
+      });
+      updateUserImage(file);
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -103,22 +119,7 @@ class _ProfileState extends State<Profile> {
                 Row(
                   children: [
                     InkWell(
-                      onTap: () async {
-                        try {
-                          final image = await ImagePicker()
-                              .pickImage(source: ImageSource.gallery);
-                          if (image == null) return;
-                          // final imageTemp = File(imag, .e. ,image.path);
-                          final file = File(image.path);
-                          setState(() {
-                            this.image = file;
-                          });
-                          print(image);
-                          updateUserImage(file);
-                        } catch (e) {
-                          print(e);
-                        }
-                      },
+                      onTap: () {},
                       child: Container(
                         margin: const EdgeInsets.only(
                           left: 20.0,

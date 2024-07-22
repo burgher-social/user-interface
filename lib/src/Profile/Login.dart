@@ -34,6 +34,8 @@ class _LoginState extends State<Login> {
   bool isNewUser = false;
   String? email;
   String? firebaseAuthToken;
+
+  bool loading = false;
   @override
   void initState() {
     super.initState();
@@ -48,48 +50,10 @@ class _LoginState extends State<Login> {
       await updateLocation();
     }
     return;
-    // var user = await getUser();
-    // print("EXISTING USER");
-    // print(user);
-    // if (user == null) {
-    //   print("Sign in with google");
-    //   setState(() {
-    //     isLoggedIn = false;
-    //     checkedState = true;
-    //   });
-    // } else {
-    //   Codec<String, String> stringToBase64 = utf8.fuse(base64);
-    //   var jsonToken =
-    //       json.decode(stringToBase64.decode(user["token"].split(".")[1]));
-    //   DateTime now = DateTime.now();
-    //   DateTime utcNow = now.toUtc(); // Convert local time to UTC
-    //   int epochTime = utcNow.millisecondsSinceEpoch;
-    //   if (jsonToken["exp"] > epochTime) {
-    //     setState(() {
-    //       checkedState = true;
-    //       isLoggedIn = false;
-    //     });
-    //     return false;
-    //   }
-    //   local_storage.token = user["token"];
-    //   saveToken(user["token"], null);
-    //   await updateLocation();
-    //   setState(() {
-    //     isLoggedIn = true;
-    //     checkedState = true;
-    //   });
-    //   return true;
-    // }
-    // setState(() {
-    //   isLoggedIn = false;
-    //   checkedState = true;
-    // });
-    // return false;
   }
 
   Future<(UserCredential, String?)> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    print("GETTING LOGIN INFO");
     // print(res);
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
@@ -101,17 +65,13 @@ class _LoginState extends State<Login> {
     );
     var res = await FirebaseAuth.instance.signInWithCredential(credential);
     var res2 = await FirebaseAuth.instance.currentUser?.getIdToken();
-    print(res2);
-    print("");
-    print("");
-    print("");
-    print(res);
-
     return (res, res2);
   }
 
   Future<void> signInWithGoogleHelper() async {
-    print("signed in with google");
+    setState(() {
+      loading = true;
+    });
     Map<String, dynamic> body = {};
     var (signInInfo, idtok) = await signInWithGoogle();
     firebaseAuthToken = idtok;
@@ -127,22 +87,20 @@ class _LoginState extends State<Login> {
         },
       );
     } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("API error"),
+        ));
+      }
+      setState(() {
+        loading = false;
+      });
       print(e);
       return;
     }
-    print(body);
     if (body.containsKey("refreshToken") && body["refreshToken"] != null) {
       await saveToken(body["accessToken"], body["refreshToken"]);
       await updateLocation();
-      // local_storage.token = body["accessToken"];
-      // AppConstants.accessToken = body["accessToken"];
-      // AppConstants.refreshToken = body["refreshToken"];
-      // AppConstants.id = body["id"];
-      // AppConstants.emailId = body["emailId"];
-      // AppConstants.username = body["username"];
-      // AppConstants.tag = body["tag"].toString();
-
-      print(body);
       try {
         await createUser(
           body["username"],
@@ -154,20 +112,24 @@ class _LoginState extends State<Login> {
           body["id"],
         );
       } catch (e) {
-        print(e);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("DB error"),
+          ));
+        }
+        setState(() {
+          loading = false;
+        });
         return;
       }
     } else {
-      // setState(() {
       isNewUser = true;
-      // });
     }
 
     isLoggedIn = true;
     checkedState = true;
+    loading = false;
     setState(() {});
-    // setState(() {
-    // });
   }
 
   @override
@@ -186,16 +148,19 @@ class _LoginState extends State<Login> {
       }
       return Scaffold(
         body: Center(
-          child: Column(
-            children: [
-              ElevatedButton(
-                onPressed: signInWithGoogleHelper,
-                child: const Text(
-                  "Sign in with google",
+          child: loading
+              ? const CircularProgressIndicator()
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: signInWithGoogleHelper,
+                      child: const Text(
+                        "Sign in with google",
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
         ),
       );
     }

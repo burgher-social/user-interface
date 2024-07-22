@@ -3,26 +3,33 @@ import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 
 class Comments extends StatefulWidget {
-  const Comments(
-      {super.key,
-      required this.content,
-      required this.image,
-      required this.username,
-      required this.userId,
-      required this.postId});
+  const Comments({
+    super.key,
+    required this.content,
+    required this.image,
+    required this.username,
+    required this.userId,
+    required this.postId,
+    this.latitude,
+    this.longitude,
+  });
   final String content;
   final String image;
   final String postId;
   final String username;
   final String userId;
 
+  final double? latitude;
+  final double? longitude;
   @override
   State<Comments> createState() => _CommentsState();
 }
 
 class _CommentsState extends State<Comments> {
   String? content;
+  bool loading = true;
   var comments = [];
+  final fieldText = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
@@ -33,12 +40,34 @@ class _CommentsState extends State<Comments> {
   void submitPost() async {
     if (content == null || content == "") return;
     try {
-      var resp = await callApi("/post/create", true, {
-        "content": content,
+      var tempContent = content;
+      FocusManager.instance.primaryFocus?.unfocus();
+      content = null;
+      loading = true;
+      fieldText.clear();
+      setState(() {});
+      await callApi("/post/create", true, {
+        "content": tempContent,
         "parentId": widget.postId,
         "topics": ["test"],
       });
-      print(resp);
+
+      comments.insert(
+        0,
+        PostComponent(
+          content: tempContent!,
+          image: widget.image,
+          postId: widget.postId,
+          recognizePost: false,
+          username: widget.username,
+          userId: widget.userId,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+        ),
+      );
+      loading = false;
+      setState(() {});
+      // print(resp);
     } catch (e) {
       print(e);
     }
@@ -53,7 +82,7 @@ class _CommentsState extends State<Comments> {
     // localPosts.add();
     setState(() {});
     // if (context.mounted) Navigator.pop(context);
-    print(content);
+    // print(content);
   }
 
   Future<void> getComments() async {
@@ -64,7 +93,7 @@ class _CommentsState extends State<Comments> {
         "postId": widget.postId,
       },
     );
-    print(res);
+    // print(res);
     for (var i in res["response"]) {
       comments.add(
         PostComponent(
@@ -74,10 +103,13 @@ class _CommentsState extends State<Comments> {
           recognizePost: false,
           username: i["user"]["username"],
           userId: i["post"]["userId"],
+          latitude: i["location"]["latitude"],
+          longitude: i["location"]["longitude"],
         ),
       );
-      setState(() {});
     }
+    loading = false;
+    setState(() {});
   }
 
   @override
@@ -92,17 +124,26 @@ class _CommentsState extends State<Comments> {
             postId: widget.postId,
             userId: widget.userId,
             username: widget.username,
+            latitude: widget.latitude,
+            longitude: widget.longitude,
           ),
-          Flexible(
-            child: Scaffold(
-              body: ListView.builder(
-                itemCount: comments.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return comments[index];
-                },
-              ),
-            ),
+          const SizedBox(height: 8),
+          const Divider(
+            color: Colors.black,
           ),
+          const SizedBox(height: 8),
+          loading
+              ? const CircularProgressIndicator()
+              : Flexible(
+                  child: Scaffold(
+                    body: ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return comments[index];
+                      },
+                    ),
+                  ),
+                ),
           Row(
             children: [
               Flexible(
@@ -111,10 +152,14 @@ class _CommentsState extends State<Comments> {
                     labelText: "Comment...",
                     border: OutlineInputBorder(
                       borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(
-                          10.0)), // Optional: Adds rounded corners
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(
+                          10.0,
+                        ),
+                      ), // Optional: Adds rounded corners
                     ),
                   ),
+                  controller: fieldText,
                   onChanged: (value) {
                     setState(() {
                       content = value;

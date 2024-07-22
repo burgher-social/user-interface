@@ -1,28 +1,37 @@
+import 'package:burgher/src/Config/global.dart';
 import 'package:burgher/src/Post/comments.dart';
+import 'package:burgher/src/Utils/Location.dart';
 import 'package:flutter/material.dart';
 
 import '../Profile/profile.dart';
 
 class PostComponent extends StatefulWidget {
-  const PostComponent(
-      {super.key,
-      this.recognizePost = true,
-      required this.content,
-      required this.image,
-      required this.username,
-      required this.userId,
-      required this.postId});
+  const PostComponent({
+    super.key,
+    this.recognizePost = true,
+    required this.content,
+    required this.image,
+    required this.username,
+    required this.userId,
+    required this.postId,
+    this.latitude,
+    this.longitude,
+  });
   final String content;
   final String image;
   final String postId;
   final bool recognizePost;
   final String username;
   final String userId;
+
+  final double? latitude;
+  final double? longitude;
   @override
   State<PostComponent> createState() => _PostComponentState();
 }
 
 class _PostComponentState extends State<PostComponent> {
+  String? dist;
   @override
   void initState() {
     // TODO: implement initState
@@ -30,6 +39,29 @@ class _PostComponentState extends State<PostComponent> {
     if (widget.recognizePost) {
       com = openComments;
     }
+    calculateDistanceHelper();
+  }
+
+  Future<void> calculateDistanceHelper() async {
+    if (widget.latitude == null || widget.longitude == null) {
+      return;
+    }
+    var lat = AppConstants.latitude;
+    var lng = AppConstants.longitude;
+
+    if (lat == null) {
+      var pos = await determineLocation();
+      lat = pos.latitude;
+      lng = pos.longitude;
+    }
+    var di = calculateDistance(widget.latitude, widget.longitude, lat, lng);
+    var mdi = di * 1000;
+    if (mdi > 1.0) {
+      dist = "${mdi.toStringAsFixed(1)}km";
+    } else {
+      dist = "${(mdi * 1000).toStringAsFixed(0)}m";
+    }
+    setState(() {});
   }
 
   void Function()? com;
@@ -43,6 +75,8 @@ class _PostComponentState extends State<PostComponent> {
           postId: widget.postId,
           userId: widget.userId,
           username: widget.username,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
         ),
       ),
     );
@@ -55,9 +89,21 @@ class _PostComponentState extends State<PostComponent> {
         children: [
           ListTile(
             onTap: com,
-            title: Text(widget.username),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.username,
+                ),
+                dist == null ? Container() : Text(dist!)
+              ],
+            ),
             subtitle: Text(
               widget.content,
+              style: TextStyle(
+                fontWeight:
+                    !widget.recognizePost ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
             leading: GestureDetector(
               child: ClipRRect(
@@ -80,18 +126,6 @@ class _PostComponentState extends State<PostComponent> {
                 );
               },
             ),
-            // CircleAvatar(
-            //   // radius: 100,
-            //   // borderRadius: BorderRadius.circular(100),
-            //   child: SizedBox.fromSize(
-            //     size: const Size.fromRadius(48), // Image radius
-            //     child: Image.network(
-            //       widget.image,
-            //       fit: BoxFit.cover,
-            //     ),
-            //   ),
-            // ),
-            // subtitle:
           ),
           const SizedBox(height: 8),
           const Row(
@@ -105,10 +139,8 @@ class _PostComponentState extends State<PostComponent> {
               Icon(
                 Icons.comment,
               ),
-              // Expanded(child: Container(child: ,))
             ],
           ),
-          // const Spacer(),
           const SizedBox(height: 8),
         ],
       ),

@@ -6,8 +6,6 @@ updateLocation() async {
   try {
     print("calling location update");
     var pos = await determineLocation();
-    print(pos);
-    print("Calling API loc crate");
     await callApi("/location/create", true, {
       "latitude": pos.latitude,
       "longitude": pos.longitude,
@@ -20,8 +18,7 @@ updateLocation() async {
 Future<bool> getLocationHelper() async {
   try {
     print("getting location");
-    var pos = await determineLocation();
-    return true;
+    return await determinePosition();
   } catch (e) {
     print(e);
     print("error in fetching location");

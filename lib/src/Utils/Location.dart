@@ -1,17 +1,17 @@
+import 'package:burgher/src/Config/global.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:math' show cos, sqrt, asin;
 
 /// Determine the current position of the device.
 ///
 /// When the location services are not enabled or permissions
 /// are denied the `Future` will return an error.
-Future<Position> determinePosition() async {
+Future<bool> determinePosition() async {
   bool serviceEnabled;
   LocationPermission permission;
 
   // Test if location services are enabled.
   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  print(serviceEnabled);
-  print("serviceEnabled");
   if (!serviceEnabled) {
     // Location services are not enabled don't continue
     // accessing the position and request users of the
@@ -20,8 +20,6 @@ Future<Position> determinePosition() async {
   }
 
   permission = await Geolocator.checkPermission();
-  print(permission);
-  print("permission");
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
@@ -43,13 +41,28 @@ Future<Position> determinePosition() async {
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
-  print("Accepted");
-  print(await Geolocator.getCurrentPosition());
-  return await Geolocator.getCurrentPosition();
+  return true;
+  // print("Accepted");
+  // print(await Geolocator.getCurrentPosition());
+  // return await Geolocator.getCurrentPosition();
 }
 
 Future<Position> determineLocation() async {
-  var pos = await determinePosition();
-  print(pos);
-  return pos;
+  var posPer = await determinePosition().then((e) => true).catchError((e) => e);
+  if (posPer == true) {
+    var pos = await Geolocator.getCurrentPosition();
+    AppConstants.latitude = pos.latitude;
+    AppConstants.longitude = pos.longitude;
+    return pos;
+  }
+  return Future.error(posPer);
+}
+
+double calculateDistance(lat1, lon1, lat2, lon2) {
+  var p = 0.017453292519943295;
+  var c = cos;
+  var a = 0.5 -
+      c((lat2 - lat1) * p) / 2 +
+      c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+  return 12742 * asin(sqrt(a));
 }
