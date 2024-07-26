@@ -2,6 +2,9 @@ import 'package:burgher/src/Post/post_component.dart';
 import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 
+import '../Config/global.dart';
+import '../Utils/Location.dart';
+
 class Comments extends StatefulWidget {
   const Comments({
     super.key,
@@ -14,6 +17,10 @@ class Comments extends StatefulWidget {
     this.longitude,
     this.likeCount,
     this.commentCount,
+    this.likedPostByUser,
+    this.updateParentCommentCount,
+    this.updateParentLikeCount,
+    this.updateParentLikePost,
   });
   final String content;
   final String image;
@@ -26,6 +33,13 @@ class Comments extends StatefulWidget {
 
   final int? likeCount;
   final int? commentCount;
+
+  final bool? likedPostByUser;
+
+  final Function? updateParentLikeCount;
+  final Function? updateParentCommentCount;
+  final Function? updateParentLikePost;
+
   @override
   State<Comments> createState() => _CommentsState();
 }
@@ -36,6 +50,7 @@ class _CommentsState extends State<Comments> {
   int likesCount = 0;
   int commentsCount = 0;
   var comments = [];
+  bool likedPostByUser = false;
   final fieldText = TextEditingController();
   @override
   void initState() {
@@ -43,6 +58,7 @@ class _CommentsState extends State<Comments> {
     super.initState();
     likesCount = widget.likeCount ?? 0;
     commentsCount = widget.commentCount ?? 0;
+    likedPostByUser = widget.likedPostByUser ?? false;
 
     getComments();
   }
@@ -54,6 +70,11 @@ class _CommentsState extends State<Comments> {
       FocusManager.instance.primaryFocus?.unfocus();
       content = null;
       loading = true;
+      print("TRYING TO INFORM PARENT");
+      print(widget.updateParentCommentCount);
+      widget.updateParentCommentCount?.call(1);
+      // widget.updateParentCommentCount!(1);
+      print("UPDATED PARENT");
       fieldText.clear();
       setState(() {});
       await callApi("/post/create", true, {
@@ -61,7 +82,14 @@ class _CommentsState extends State<Comments> {
         "parentId": widget.postId,
         "topics": ["test"],
       });
+      var lat = AppConstants.latitude;
+      var lng = AppConstants.longitude;
 
+      if (lat == null) {
+        var pos = await determineLocation();
+        lat = pos.latitude;
+        lng = pos.longitude;
+      }
       comments.insert(
         0,
         PostComponent(
@@ -71,42 +99,35 @@ class _CommentsState extends State<Comments> {
           recognizePost: false,
           username: widget.username,
           userId: widget.userId,
-          latitude: widget.latitude,
-          longitude: widget.longitude,
+          latitude: lat,
+          longitude: lng,
           likeCount: 0,
           commentCount: 0,
+          likedPostByUser: false,
+          updateParentCommentCount: widget.updateParentCommentCount,
+          updateParentLikeCount: widget.updateParentLikeCount,
+          updateParentLikePost: widget.updateParentLikePost,
         ),
       );
+      commentsCount++;
       loading = false;
-      likesCount++;
+      // likesCount++;
       setState(() {});
       // print(resp);
     } catch (e) {
       print(e);
     }
-    // await generateFeed([
-    //   {
-    //     "post_id": DateTime.now().millisecondsSinceEpoch + 1,
-    //     "is_seen": false,
-    //     "created_at": DateTime.now().millisecondsSinceEpoch,
-    //     "score": 10,
-    //   }
-    // ]);
-    // localPosts.add();
     setState(() {});
-    // if (context.mounted) Navigator.pop(context);
-    // print(content);
   }
 
   Future<void> getComments() async {
     var res = await callApi(
       "/post/comments/read",
-      false,
+      true,
       {
         "postId": widget.postId,
       },
     );
-    // print(res);
     for (var i in res["response"]) {
       comments.add(
         PostComponent(
@@ -120,6 +141,7 @@ class _CommentsState extends State<Comments> {
           longitude: i["location"]["longitude"],
           likeCount: i["insights"]["likes"],
           commentCount: i["insights"]["comments"],
+          likedPostByUser: i["likes"]["postId"] == null ? false : true,
         ),
       );
     }
@@ -143,6 +165,7 @@ class _CommentsState extends State<Comments> {
             longitude: widget.longitude,
             likeCount: likesCount,
             commentCount: commentsCount,
+            likedPostByUser: widget.likedPostByUser,
           ),
           const SizedBox(height: 8),
           const Divider(

@@ -17,32 +17,11 @@ Future<List<String>> getRelevantPostIds() async {
     try {
       await refrestContent();
       postsfromDb = await getPostIds(offs, offs + lim);
-
-      // if (postsfromDb.isEmpty && loadSeen) {
-      //   postsfromDb = await getPostIds(0, 40, isSeen: true);
-      //   print("SEEN POSTS LOADING");
-      //   print(postsfromDb);
-      // }
-      // print(resp);
     } catch (e) {
       print(e);
     }
   }
   return postsfromDb;
-  // for (var i in postsfromDb) {
-  //   getPostContent(i);
-  // }
-  // List<Widget> postst = [];
-  // for (int i = 0; i < postsfromDb.length; ++i) {
-  //   postst.add(const ListTile(
-  //     leading: Text("icon"),
-  //     title: Text("title"),
-  //   ));
-  // }
-
-  // setState(() {
-  //   posts = postst;
-  // });
 }
 
 Future<void> refrestContent() async {
@@ -62,7 +41,7 @@ Future<void> refrestContent() async {
 Future<Map<String, dynamic>> getContent(String postId) async {
   final res = await callApi(
     "/post/readOne",
-    false,
+    true,
     {
       "postId": postId,
     },
@@ -71,20 +50,3 @@ Future<Map<String, dynamic>> getContent(String postId) async {
   print(res);
   return res;
 }
-
-// void getPostContent(String postId) async {
-//   getContent(postId).then((value) {
-//     postsTemp.add(ListTile(
-//       title: Text(value["post"]["content"]),
-//       leading: Text(postId),
-//     ));
-//     markSeen(postId);
-//     print("Marked seeb");
-//     print(posts);
-//     print(postsTemp);
-//     // setState(() {
-//     print(posts);
-//     posts = postsTemp;
-//     // });
-//   });
-// }

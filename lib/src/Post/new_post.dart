@@ -1,3 +1,4 @@
+import 'package:burgher/src/Storage/feed.dart';
 import 'package:flutter/material.dart';
 import '../Utils/api.dart';
 
@@ -21,6 +22,13 @@ class _NewPostState extends State<NewPost> {
           "topics": ["test"],
         });
         print(resp);
+        // generateFeed([
+        //   {
+        //     "postId": resp["id"],
+        //     "score": 0,
+        //     "timestamp": DateTime.now().millisecondsSinceEpoch
+        //   }
+        // ]);
       } catch (e) {
         print(e);
       }

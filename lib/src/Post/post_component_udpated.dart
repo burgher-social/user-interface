@@ -1,13 +1,28 @@
-import 'package:burgher/src/Config/global.dart';
-import 'package:burgher/src/Post/comments.dart';
-import 'package:burgher/src/Utils/Location.dart';
-import 'package:burgher/src/Utils/api.dart';
+import 'package:burgher/src/Post/comments_updated.dart';
 import 'package:flutter/material.dart';
 
 import '../Profile/profile.dart';
+import '../Utils/Location.dart';
+import '../Utils/api.dart';
+import 'comments.dart';
 
-class PostComponent extends StatefulWidget {
-  const PostComponent({
+void updateLikeCount(int count, Map<String, dynamic> obj) {
+  obj["likes"] += count;
+}
+
+void updateCommentCount(int count, Map<String, dynamic> obj, Function? par) {
+  par?.call(count);
+  obj["comments"] += count;
+  print("NEW OBJECT");
+  print(obj);
+}
+
+void setLikedByUser(bool likedByUserChild, Map<String, dynamic> obj) {
+  obj["likedByUser"] = likedByUserChild;
+}
+
+class PostComponentUpdated extends StatefulWidget {
+  const PostComponentUpdated({
     super.key,
     this.recognizePost = true,
     required this.content,
@@ -24,6 +39,7 @@ class PostComponent extends StatefulWidget {
     this.updateParentLikeCount,
     this.updateParentLikePost,
   });
+
   final String content;
   final String image;
   final String postId;
@@ -43,60 +59,86 @@ class PostComponent extends StatefulWidget {
   final Function? updateParentCommentCount;
   final Function? updateParentLikePost;
   @override
-  State<PostComponent> createState() => _PostComponentState();
+  State<PostComponentUpdated> createState() => _PostComponentUpdatedState();
 }
 
-class _PostComponentState extends State<PostComponent> {
-  String? dist;
-  int likes = 0;
-  int comments = 0;
-
-  bool likedPostByUser = false;
+class _PostComponentUpdatedState extends State<PostComponentUpdated> {
+  Map<String, dynamic> obj = {};
+  String? dista;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    if (widget.recognizePost) {
-      com = openComments;
-    }
-    likes = widget.likeCount ?? 0;
-    comments = widget.commentCount ?? 0;
-    likedPostByUser = widget.likedPostByUser ?? false;
-    calculateDistanceHelper();
+    obj["likes"] = widget.likeCount;
+    obj["comments"] = widget.commentCount;
+    obj["likedByUser"] = widget.likedPostByUser;
+    print(obj);
+    print("POSTS IN UPDATED COMPONENR");
+    distanceCalculator();
   }
 
-  void updateLikeCount(int count) {
-    likes += count;
+  @override
+  void didUpdateWidget(oldwidget) {
+    super.didUpdateWidget(oldwidget);
+    print("DID UPDATE CALLED");
+    // print(this.widget.likeCount);
+    obj["likedByUser"] = widget.likedPostByUser;
+    obj["likes"] = widget.likeCount;
+    // print(oldwidget.likeCount);
+    // this.widget.likeCount = setState(() {});
   }
 
-  void updateCommentCount(int count) {
-    print("updating count");
-    comments += count;
+  Future<void> distanceCalculator() async {
+    dista = await calculateDistanceHelper(widget.latitude, widget.longitude);
+    setState(() {});
   }
 
-  void setLikedByUser(bool likedByUserChild) {
-    likedPostByUser = likedByUserChild;
+  Future<void> openComments() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CommentsUpdated(
+          // content: widget.content,
+          postComponent: widget,
+          // image: widget.image,
+          postId: widget.postId,
+          // userId: widget.userId,
+          // username: widget.username,
+          // latitude: widget.latitude,
+          // longitude: widget.longitude,
+          // likeCount: widget.likeCount,
+          // commentCount: widget.commentCount,
+          // likedPostByUser: widget.likedPostByUser,
+          updateParentLikeCount: (int count) => updateLikeCount(count, obj),
+          updateParentCommentCount: (int count) =>
+              updateCommentCount(count, obj, widget.updateParentCommentCount),
+          updateParentLikePost: (bool v) => setLikedByUser(v, obj),
+        ),
+      ),
+    );
+    // widget?.updateParentCommentCount?.call(1);
+    setState(() {});
   }
 
   Future<void> likePost() async {
     int count = 0;
     String path = "/insights/like/add";
-    if (likedPostByUser) {
-      likes += 1;
+    if (!obj["likedByUser"]) {
+      obj["likes"] += 1;
       count += 1;
       path = "/insights/like/add";
     } else {
-      likes -= 1;
+      obj["likes"] -= 1;
       count -= 1;
       path = "/insights/like/subtract";
     }
 
-    likedPostByUser = !likedPostByUser;
-    widget.updateParentLikePost != null &&
-        widget.updateParentLikePost!(likedPostByUser);
-    widget.updateParentLikeCount != null &&
-        widget.updateParentLikeCount!(likes);
+    obj["likedByUser"] = !obj["likedByUser"];
+    widget.updateParentLikePost?.call(obj["likedByUser"]);
+    widget.updateParentLikeCount?.call(count);
     setState(() {});
+    // print(count);
+    // print(widget.postId);
+    // print("LOGGING LIKE");
     callApi(
       path,
       true,
@@ -107,60 +149,16 @@ class _PostComponentState extends State<PostComponent> {
     );
   }
 
-  Future<void> calculateDistanceHelper() async {
-    if (widget.latitude == null || widget.longitude == null) {
-      return;
-    }
-    var lat = AppConstants.latitude;
-    var lng = AppConstants.longitude;
-
-    if (lat == null) {
-      var pos = await determineLocation();
-      lat = pos.latitude;
-      lng = pos.longitude;
-    }
-    var di = calculateDistance(widget.latitude, widget.longitude, lat, lng);
-    var mdi = di * 1000;
-    if (mdi > 1.0) {
-      dist = "${di.toStringAsFixed(1)}km";
-    } else {
-      dist = "${mdi.toStringAsFixed(0)}m";
-    }
-    setState(() {});
-  }
-
-  void Function()? com;
-  Future<void> openComments() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Comments(
-          content: widget.content,
-          image: widget.image,
-          postId: widget.postId,
-          userId: widget.userId,
-          username: widget.username,
-          latitude: widget.latitude,
-          longitude: widget.longitude,
-          likeCount: widget.likeCount,
-          commentCount: widget.commentCount,
-          likedPostByUser: widget.likedPostByUser,
-          updateParentCommentCount: updateCommentCount,
-          updateParentLikeCount: updateLikeCount,
-          updateParentLikePost: setLikedByUser,
-        ),
-      ),
-    );
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
+    // obj["likes"] = widget.likeCount;
+    obj["comments"] = widget.commentCount;
+    // obj["likedByUser"] = widget.likedPostByUser;
     return Card(
       child: Column(
         children: [
           ListTile(
-            onTap: com,
+            onTap: widget.recognizePost ? openComments : null,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -169,11 +167,11 @@ class _PostComponentState extends State<PostComponent> {
                 ),
                 Row(
                   children: [
-                    if (dist != null) ...[
+                    if (dista != null) ...[
                       const Icon(
                         Icons.location_on,
                       ),
-                      Text(dist!),
+                      Text(dista!),
                     ],
                   ],
                 ),
@@ -205,6 +203,7 @@ class _PostComponentState extends State<PostComponent> {
                     ),
                   ),
                 );
+                setState(() {});
               },
             ),
           ),
@@ -217,14 +216,14 @@ class _PostComponentState extends State<PostComponent> {
                 onTap: likePost,
                 child: Icon(
                   Icons.favorite,
-                  color: likedPostByUser
+                  color: obj["likedByUser"]
                       ? const Color.fromARGB(255, 145, 13, 3)
                       : Colors.black,
                 ),
               ),
               const SizedBox(width: 3),
               Text(
-                likes.toString(),
+                obj["likes"].toString(),
               ),
               if (widget.recognizePost) ...[
                 const SizedBox(width: 20),
@@ -234,7 +233,7 @@ class _PostComponentState extends State<PostComponent> {
                 ),
                 const SizedBox(width: 3),
                 Text(
-                  comments.toString(),
+                  obj["comments"].toString(),
                 ),
               ]
             ],

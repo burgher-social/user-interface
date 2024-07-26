@@ -1,3 +1,4 @@
+import 'package:burgher/src/Feed/home_page_updated.dart';
 import 'package:burgher/src/Profile/auth.dart';
 import 'package:flutter/material.dart';
 import '../Location/location_helper.dart';
@@ -77,14 +78,17 @@ class _LoginState extends State<Login> {
     firebaseAuthToken = idtok;
     email = signInInfo.additionalUserInfo?.profile?["email"];
     try {
+      var reqBody = {
+        "email": signInInfo.additionalUserInfo?.profile?["email"],
+        "accessToken": signInInfo.credential?.accessToken,
+        "profilePicture": signInInfo.additionalUserInfo?.profile?["picture"],
+        "firebaseAuthIdToken": firebaseAuthToken
+      };
+      // print(reqBody);
       body = await callApi(
         "user/read/email",
         false,
-        {
-          "email": signInInfo.additionalUserInfo?.profile?["email"],
-          "accessToken": signInInfo.credential?.accessToken,
-          "profilePicture": signInInfo.additionalUserInfo?.profile?["picture"],
-        },
+        reqBody,
       );
     } catch (e) {
       if (mounted) {
@@ -144,7 +148,7 @@ class _LoginState extends State<Login> {
         );
       }
       if (isLoggedIn) {
-        return const Homepage();
+        return const HomePageUpdated();
       }
       return Scaffold(
         body: Center(

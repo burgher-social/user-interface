@@ -6,10 +6,12 @@ import 'package:path/path.dart';
 import '../Profile/Auth.dart';
 
 Future<Map<String, dynamic>> callApi(
-    String path, bool useAuth, Map<String, dynamic>? body) async {
+    String path, bool useAuth, Map<String, dynamic>? body,
+    {int retryCount = 0}) async {
   var url = AppConstants.protocol(AppConstants.baseurl, path);
   print(body);
   print(url);
+  print(useAuth);
   // var response = await http.post(url, body: {
   //   'email': 'shobhit@email.com',
   //   'tag': int.parse(_tagController.text),
@@ -30,6 +32,10 @@ Future<Map<String, dynamic>> callApi(
     body: json.encode(body),
   );
   print(response.body);
+  if (response.statusCode == 401 && retryCount < 1) {
+    await getToken();
+    return callApi(path, useAuth, body, retryCount: retryCount + 1);
+  }
   final decoded = json.decode(response.body);
   if (decoded is List) {
     print("fixing list");

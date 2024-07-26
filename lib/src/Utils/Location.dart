@@ -66,3 +66,25 @@ double calculateDistance(lat1, lon1, lat2, lon2) {
       c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
   return 12742 * asin(sqrt(a));
 }
+
+Future<String?> calculateDistanceHelper(
+    double? latitude, double? longitude) async {
+  if (latitude == null || longitude == null) {
+    return null;
+  }
+  var lat = AppConstants.latitude;
+  var lng = AppConstants.longitude;
+
+  if (lat == null) {
+    var pos = await determineLocation();
+    lat = pos.latitude;
+    lng = pos.longitude;
+  }
+  var di = calculateDistance(latitude, longitude, lat, lng);
+  if (di > 1.0) {
+    return "${di.toStringAsFixed(1)}km";
+  } else {
+    var mdi = di * 1000;
+    return "${mdi.toStringAsFixed(0)}m";
+  }
+}

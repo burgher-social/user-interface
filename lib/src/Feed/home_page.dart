@@ -16,7 +16,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  List<Widget> posts = [];
+  List<Map<String, dynamic>> posts = [];
   List<Widget> postsTemp = [];
   @override
   void initState() {
@@ -49,55 +49,36 @@ class _HomepageState extends State<Homepage> {
     // posts.removeLast();
   }
 
-  // Future<Map<String, dynamic>> getContent(String postId) async {
-  //   final res = await callApi(
-  //     "/post/readOne",
-  //     false,
-  //     {
-  //       "postId": postId,
-  //     },
-  //   );
-
-  //   print(res);
-  //   return res;
-  // }
-
   Future<void> getPostContent(String postId, int totalPosts) async {
     await getContent(postId).then((value) {
-      print("adding post - $postId");
-      // postsTemp.add(ListTile(
-      // title: Text(value["post"]["content"]),
-      // leading: Text(postId),
-      // ));
-      // markSeen(postId);
-      // print("Marked seeb");
-      // print(postsTemp);
-      posts.add(
-        PostComponent(
-          content: value["post"]["content"],
-          image: value["user"]["imageUrl"],
-          postId: value["post"]["id"],
-          userId: value["post"]["userId"],
-          username: value["user"]["username"],
-          latitude: value["location"]["latitude"],
-          longitude: value["location"]["longitude"],
-          likeCount: value["insights"]?["likes"],
-          commentCount: value["insights"]?["comments"],
-        ),
-      );
-      // if (totalPosts == posts.length) {
-      // posts.add(
-      //   TextButton(
-      //     onPressed: loadMore,
-      //     child: const Text(
-      //       "Load More",
-      //     ),
-      //   ),
-      // );
-      // }
+      print(value);
+      posts.add({
+        "content": value["post"]["content"],
+        "image": value["user"]["imageUrl"],
+        "postId": value["post"]["id"],
+        "userId": value["post"]["userId"],
+        "username": value["user"]["username"],
+        "latitude": value["location"]["latitude"],
+        "longitude": value["location"]["longitude"],
+        "likeCount": value["insights"]?["likes"],
+        "commentCount": value["insights"]?["comments"],
+        "likedPostByUser": value["likes"]["postId"] == null ? false : true,
+      }
+          // PostComponent(
+          //   content: value["post"]["content"],
+          //   image: value["user"]["imageUrl"],
+          //   postId: value["post"]["id"],
+          //   userId: value["post"]["userId"],
+          //   username: value["user"]["username"],
+          //   latitude: value["location"]["latitude"],
+          //   longitude: value["location"]["longitude"],
+          //   likeCount: value["insights"]?["likes"],
+          //   commentCount: value["insights"]?["comments"],
+          //   likedPostByUser: value["likes"]["postId"] == null ? false : true,
+          // ),
+          );
     }).catchError((e) => print(e));
     setState(() {
-      // print(posts);
       posts = posts;
     });
   }
@@ -153,7 +134,8 @@ class _HomepageState extends State<Homepage> {
                           ),
                         );
                       }
-                      return posts[index];
+
+                      return const Placeholder();
                     },
                   ),
                 ),

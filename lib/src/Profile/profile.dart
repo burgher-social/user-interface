@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:burgher/src/Post/post_component.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../Post/post_component_udpated.dart';
 import '../Utils/api.dart';
 
 class Profile extends StatefulWidget {
@@ -20,7 +21,8 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   File? image;
-  List<Widget> posts = [];
+  List<Map<String, dynamic>> posts = [];
+
   String? username;
   String? tag;
   String? imageUrl;
@@ -34,6 +36,21 @@ class _ProfileState extends State<Profile> {
     getUser();
   }
 
+  void updateLikeCount(int count, Map<String, dynamic> obj) {
+    obj["likeCount"] += count;
+    setState(() {});
+  }
+
+  void updateCommentCount(int count, Map<String, dynamic> obj) {
+    obj["commentCount"] += count;
+    setState(() {});
+  }
+
+  void setLikedByUser(bool likedByUserChild, Map<String, dynamic> obj) {
+    obj["likedPostByUser"] = likedByUserChild;
+    setState(() {});
+  }
+
   updateUserImage(File image) async {
     try {
       await callFormData("/user/profile/image/upload", image, true);
@@ -43,6 +60,7 @@ class _ProfileState extends State<Profile> {
   }
 
   getUser() async {
+    print(widget.userId);
     var res = await callApi("/user/read", false, {
       "userId": widget.userId,
     });
@@ -54,36 +72,40 @@ class _ProfileState extends State<Profile> {
   }
 
   getUserPosts() async {
-    var res = await callApi("/post/read", false, {
+    var res = await callApi("/post/read", true, {
       "userId": widget.userId,
     });
     List<Map<String, dynamic>> rows =
         List<Map<String, dynamic>>.from(res["response"]);
     posts = [];
-    for (var i in rows) {
+    for (var value in rows) {
       posts.add(
-        PostComponent(
-          content: i["post"]["content"],
-          image: i["user"]["imageUrl"],
-          postId: i["post"]["id"],
-          username: i["user"]["username"],
-          userId: i["post"]["userId"],
-          latitude: i["location"]["latitude"],
-          longitude: i["location"]["longitude"],
-          likeCount: i["insights"]["likes"],
-          commentCount: i["insights"]["comments"],
-        ),
+        {
+          "content": value["post"]["content"],
+          "image": value["user"]["imageUrl"],
+          "postId": value["post"]["id"],
+          "userId": value["post"]["userId"],
+          "username": value["user"]["username"],
+          "latitude": value["location"]["latitude"],
+          "longitude": value["location"]["longitude"],
+          "likeCount": value["insights"]?["likes"],
+          "commentCount": value["insights"]?["comments"],
+          "likedPostByUser":
+              value["likes"]["postId"] == null || value["likes"]["postId"] == ""
+                  ? false
+                  : true,
+        },
       );
     }
     if (rows.isNotEmpty) {
-      posts.add(
-        TextButton(
-          child: const Text(
-            "Load More",
-          ),
-          onPressed: () {},
-        ),
-      );
+      // posts.add(
+      //   TextButton(
+      //     child: const Text(
+      //       "Load More",
+      //     ),
+      //     onPressed: () {},
+      //   ),
+      // );
     }
     setState(() {});
   }
@@ -105,18 +127,13 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // extendBodyBehindAppBar: true,
       appBar: AppBar(
-        // title: const Text(
-        //   "New Post",
-        // ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: !profileFetched
           ? Container()
           : Column(
-              // crossAxisAlignment: CrossAxisAlignment.end,2
               children: [
                 Row(
                   children: [
@@ -127,12 +144,10 @@ class _ProfileState extends State<Profile> {
                           left: 20.0,
                           right: 20.0,
                         ),
-                        // padding: EdgeInsets.all(0.2), // Border width
                         decoration: BoxDecoration(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                         ),
-
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(15),
                           child: SizedBox.fromSize(
@@ -175,16 +190,29 @@ class _ProfileState extends State<Profile> {
                   child: ListView.builder(
                     itemCount: posts.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return posts[index];
+                      var posc = PostComponentUpdated(
+                        content: posts[index]["content"],
+                        image: posts[index]["image"],
+                        postId: posts[index]["postId"],
+                        userId: posts[index]["userId"],
+                        username: posts[index]["username"],
+                        latitude: posts[index]["latitude"],
+                        longitude: posts[index]["longitude"],
+                        likeCount: posts[index]["likeCount"],
+                        commentCount: posts[index]["commentCount"],
+                        likedPostByUser: posts[index]["likedPostByUser"],
+                        updateParentLikeCount: (int count) =>
+                            updateLikeCount(count, posts[index]),
+                        updateParentCommentCount: (int count) =>
+                            updateCommentCount(count, posts[index]),
+                        updateParentLikePost: (bool v) =>
+                            setLikedByUser(v, posts[index]),
+                      );
+
+                      return posc;
                     },
                   ),
                 ),
-                // TextButton(
-                //   child: const Text(
-                //     "Load More",
-                //   ),
-                //   onPressed: () {},
-                // ),
               ],
             ),
     );

@@ -1,4 +1,5 @@
 import 'package:burgher/src/Feed/home_page.dart';
+import 'package:burgher/src/Feed/home_page_updated.dart';
 import 'package:burgher/src/Utils/api.dart';
 import 'package:flutter/material.dart';
 import 'auth.dart';
@@ -111,7 +112,7 @@ class _CreateState extends State<Create> {
         ),
       );
     } else {
-      return const Homepage();
+      return const HomePageUpdated();
     }
   }
 }
