@@ -175,6 +175,7 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
+            onLongPress: likePost,
             onTap: widget.recognizePost ? openComments : null,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -202,15 +203,6 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
               ),
             ),
             leading: GestureDetector(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: Image.network(
-                  widget.image,
-                  height: 40.0,
-                  width: 40.0,
-                  fit: BoxFit.fill,
-                ),
-              ),
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -222,6 +214,15 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
                 );
                 setState(() {});
               },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image.network(
+                  widget.image,
+                  height: 40.0,
+                  width: 40.0,
+                  fit: BoxFit.fill,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -244,9 +245,12 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
               ),
               if (widget.recognizePost) ...[
                 const SizedBox(width: 20),
-                const Icon(
-                  Icons.comment,
-                  // color: Color.fromARGB(0, 0, 0, .0),
+                GestureDetector(
+                  onTap: widget.recognizePost ? openComments : null,
+                  child: const Icon(
+                    Icons.comment,
+                    // color: Color.fromARGB(0, 0, 0, .0),
+                  ),
                 ),
                 const SizedBox(width: 3),
                 Text(
