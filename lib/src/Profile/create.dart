@@ -29,22 +29,35 @@ class _CreateState extends State<Create> {
   }
 
   Future<void> submitForm() async {
-    print(_nameController.text);
-    print(_tagController.text);
-    print(_usernameController.text);
-    print(int.parse(_tagController.text));
+    // print(_nameController.text);
+    // print(_tagController.text);
+    // print(_usernameController.text);
+    // print(int.parse(_tagController.text));
+    if (_usernameController.text.trim() == "" ||
+        _nameController.text.trim() == "") {
+      return;
+    }
     try {
       setState(() {
         loading = true;
       });
       var response = await callApi('/user/create', false, {
         'email': widget.email?.trim(),
-        'tag': int.parse(_tagController.text.trim()),
+        'tag': 0000,
         "username": _usernameController.text.trim(),
         "name": _nameController.text.trim(),
         "firebaseAuthIdToken": widget.firebaseAuthToken
       });
+      print(response);
       if (response["accessToken"] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Username not available"),
+          ),
+        );
+        setState(() {
+          loading = false;
+        });
         return;
       }
       await saveToken(response["accessToken"], response["refreshToken"]);
@@ -90,14 +103,14 @@ class _CreateState extends State<Create> {
                 contentPadding: EdgeInsets.all(20.0),
               ),
             ),
-            TextFormField(
-              controller: _tagController,
-              decoration: const InputDecoration(
-                labelText: 'Tag',
-                hintText: 'Enter your tag',
-                contentPadding: EdgeInsets.all(20.0),
-              ),
-            ),
+            // TextFormField(
+            //   controller: _tagController,
+            //   decoration: const InputDecoration(
+            //     labelText: 'Tag',
+            //     hintText: 'Enter your tag',
+            //     contentPadding: EdgeInsets.all(20.0),
+            //   ),
+            // ),
             loading
                 ? const CircularProgressIndicator()
                 : Center(

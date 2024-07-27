@@ -180,10 +180,20 @@ class _HomePageUpdatedState extends State<HomePageUpdated> {
           backgroundColor: const Color(0xFFE57373),
           child: const Icon(Icons.add),
           onPressed: () async {
-            await Navigator.push(
+            var resp = await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const NewPost()),
             );
+            if (resp == "refresh") {
+              await refreshFeed();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("New post created"),
+                  ),
+                );
+              }
+            }
             setState(() {});
           },
         ),

@@ -174,12 +174,12 @@ class _ProfileState extends State<Profile> {
                       Text(
                         username!,
                       ),
-                      Text(
-                        "#",
-                      ),
-                      Text(
-                        tag!,
-                      ),
+                      // Text(
+                      //   "#",
+                      // ),
+                      // Text(
+                      //   tag!,
+                      // ),
                     ],
                   ),
                 ),

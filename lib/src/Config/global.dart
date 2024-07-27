@@ -7,9 +7,10 @@ class AppConstants {
   static String? emailId;
   static double? latitude;
   static double? longitude;
-  static String baseurl = "192.168.0.117:8080";
-  // "feed-tuq4sgj4pa-el.a.run.app";
+  static String baseurl =
+      // "192.168.0.117:8080";
+      "feed-tuq4sgj4pa-el.a.run.app";
   static Uri Function(String, [String, Map<String, dynamic>?]) protocol =
-      Uri.http;
-  // Uri.https;
+      // Uri.http;
+      Uri.https;
 }

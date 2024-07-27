@@ -55,7 +55,8 @@ Future<List<String>> getPostIds(int offset, int limit,
 
 var localPosts = [];
 
-Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
+Future<void> generateFeed(List<Map<String, dynamic>> posts,
+    {int newPost = 0}) async {
   int now = DateTime.now().millisecondsSinceEpoch;
   // print(now);
   // print(posts);
@@ -72,7 +73,7 @@ Future<void> generateFeed(List<Map<String, dynamic>> posts) async {
         [
           row['postId'],
           row['score'],
-          0,
+          newPost,
           row['timestamp'],
         ],
       );

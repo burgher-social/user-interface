@@ -22,13 +22,13 @@ class _NewPostState extends State<NewPost> {
           "topics": ["test"],
         });
         print(resp);
-        // generateFeed([
-        //   {
-        //     "postId": resp["id"],
-        //     "score": 0,
-        //     "timestamp": DateTime.now().millisecondsSinceEpoch
-        //   }
-        // ]);
+        generateFeed([
+          {
+            "postId": resp["id"],
+            "score": 0,
+            "timestamp": DateTime.now().millisecondsSinceEpoch
+          }
+        ], newPost: 200);
       } catch (e) {
         print(e);
       }
@@ -42,8 +42,13 @@ class _NewPostState extends State<NewPost> {
       // ]);
       // localPosts.add();
       setState(() {});
-      if (context.mounted) Navigator.pop(context);
-      print(content);
+      // if (mounted) {
+      //   // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //   //   content: Text("New post created"),
+      //   // ));
+      // }
+
+      if (context.mounted) Navigator.pop(context, "refresh");
     }
 
     return Scaffold(
