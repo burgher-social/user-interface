@@ -6,6 +6,22 @@ import '../Utils/Location.dart';
 import '../Utils/api.dart';
 import 'comments.dart';
 
+import 'package:flutter/material.dart';
+
+// class CustomNavRoute<T> extends MaterialPageRoute<T> {
+//   CustomNavRoute(
+//       {required WidgetBuilder builder, required RouteSettings settings})
+//       : super(builder: builder, settings: settings);
+
+//   @override
+//   Widget buildTransitions(BuildContext context, Animation<double> animation,
+//       Animation<double> secondaryAnimation, Widget child) {
+//     if (settings.isInitialRoute) return child;
+
+//     return new FadeTransition(opacity: animation, child: child);
+//   }
+// }
+
 void updateLikeCount(int count, Map<String, dynamic> obj) {
   obj["likes"] += count;
 }
@@ -156,6 +172,7 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
     // obj["likedByUser"] = widget.likedPostByUser;
     return Card(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
             onTap: widget.recognizePost ? openComments : null,

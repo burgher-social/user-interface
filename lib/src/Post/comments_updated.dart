@@ -140,6 +140,12 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
       loading = false;
       // likesCount++;
       setState(() {});
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Comment posted"),
+        ));
+      }
+      if (context.mounted) Navigator.pop(context);
       // print(resp);
     } catch (e) {
       print(e);
@@ -152,6 +158,7 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
     return Scaffold(
       appBar: AppBar(),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           post!,
           const SizedBox(height: 8),
@@ -159,11 +166,18 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
             color: Colors.black,
           ),
           const SizedBox(height: 8),
+          const Text(
+            "Comments:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           loading
               ? const CircularProgressIndicator()
               : Flexible(
                   child: Scaffold(
                     body: ListView.builder(
+                      shrinkWrap: true,
                       itemCount: comments.length,
                       itemBuilder: (BuildContext context, int index) {
                         return PostComponentUpdated(
