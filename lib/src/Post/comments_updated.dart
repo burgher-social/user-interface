@@ -30,6 +30,7 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
 
   bool loading = false;
   final fieldText = TextEditingController();
+  bool _validate = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -70,10 +71,15 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
     setState(() {});
   }
 
+  bool lengthValidation(String s) {
+    return s.length < 300;
+  }
+
   void submitPost() async {
     if (content == null || content == "") return;
     try {
       var tempContent = content;
+      if (!lengthValidation(tempContent ?? "")) return;
       FocusManager.instance.primaryFocus?.unfocus();
       content = null;
       loading = true;
@@ -209,9 +215,10 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
             children: [
               Flexible(
                 child: TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "Comment...",
-                    border: OutlineInputBorder(
+                    errorText: _validate ? "Character limit breached" : null,
+                    border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.all(
                         Radius.circular(
@@ -222,7 +229,9 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
                   ),
                   controller: fieldText,
                   onChanged: (value) {
+                    if (!lengthValidation(value)) _validate = true;
                     setState(() {
+                      _validate = _validate;
                       content = value;
                     });
                   },
