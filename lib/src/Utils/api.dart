@@ -35,7 +35,8 @@ Future<Map<String, dynamic>> callApi(
   if (response.statusCode == 401 && retryCount < 1) {
     await getToken();
     // ignore: use_build_context_synchronously
-    return callApi(path, useAuth, body, retryCount: retryCount + 1, ctx: ctx);
+    return await callApi(path, useAuth, body,
+        retryCount: retryCount + 1, ctx: ctx);
   } else if (response.statusCode == 401) {
     if (ctx != null && ctx.mounted) {
       ScaffoldMessenger.of(ctx).showSnackBar(
@@ -45,9 +46,8 @@ Future<Map<String, dynamic>> callApi(
       );
     }
   }
-  final decoded = json.decode(response.body);
+  final decoded = json.decode(utf8.decode(response.bodyBytes));
   if (decoded is List) {
-    print("fixing list");
     return {"response": decoded};
   }
   return decoded;
