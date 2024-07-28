@@ -39,15 +39,16 @@ class _HomePageUpdatedState extends State<HomePageUpdated> {
   Future<void> getPostContent(String postId, int totalPosts) async {
     await getContent(postId).then((value) {
       inspect(value);
+
       posts.add(
         {
           "content": value["post"]["content"],
-          "image": value["user"]["imageUrl"],
+          "image": value["user"]["imageUrl"] ?? "",
           "postId": value["post"]["id"],
           "userId": value["post"]["userId"],
           "username": value["user"]["username"],
-          "latitude": value["location"]["latitude"],
-          "longitude": value["location"]["longitude"],
+          "latitude": value["location"]["latitude"] ?? 0.0,
+          "longitude": value["location"]["longitude"] ?? 0.0,
           "likeCount": value["insights"]?["likes"],
           "commentCount": value["insights"]?["comments"],
           "likedPostByUser":
@@ -60,6 +61,7 @@ class _HomePageUpdatedState extends State<HomePageUpdated> {
 
       print("GENERATED POSTS");
       print(posts);
+      inspect(posts);
     }).catchError((e) => print(e));
     setState(() {
       posts = posts;

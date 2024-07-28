@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:burgher/src/Config/global.dart';
+import 'package:burgher/src/Profile/Login.dart';
+import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
@@ -7,11 +9,10 @@ import '../Profile/Auth.dart';
 
 Future<Map<String, dynamic>> callApi(
     String path, bool useAuth, Map<String, dynamic>? body,
-    {int retryCount = 0}) async {
+    {int retryCount = 0, BuildContext? ctx}) async {
   var url = AppConstants.protocol(AppConstants.baseurl, path);
-  print(body);
   print(url);
-  print(useAuth);
+  print(body);
   // var response = await http.post(url, body: {
   //   'email': 'shobhit@email.com',
   //   'tag': int.parse(_tagController.text),
@@ -31,10 +32,18 @@ Future<Map<String, dynamic>> callApi(
     headers: headers,
     body: json.encode(body),
   );
-  print(response.body);
   if (response.statusCode == 401 && retryCount < 1) {
     await getToken();
-    return callApi(path, useAuth, body, retryCount: retryCount + 1);
+    // ignore: use_build_context_synchronously
+    return callApi(path, useAuth, body, retryCount: retryCount + 1, ctx: ctx);
+  } else if (response.statusCode == 401) {
+    if (ctx != null && ctx.mounted) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("Unhandled error: Clear data and restart app"),
+        ),
+      );
+    }
   }
   final decoded = json.decode(response.body);
   if (decoded is List) {

@@ -104,6 +104,7 @@ class _PostComponentState extends State<PostComponent> {
         "count": count,
         "postId": widget.postId,
       },
+      ctx: context,
     );
   }
 

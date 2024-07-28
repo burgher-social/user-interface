@@ -61,9 +61,13 @@ class _ProfileState extends State<Profile> {
 
   getUser() async {
     print(widget.userId);
-    var res = await callApi("/user/read", false, {
-      "userId": widget.userId,
-    });
+    var res = await callApi(
+        "/user/read",
+        false,
+        {
+          "userId": widget.userId,
+        },
+        ctx: context);
     imageUrl = res["imageUrl"];
     username = res["username"];
     tag = res["tag"].toString();
@@ -72,9 +76,13 @@ class _ProfileState extends State<Profile> {
   }
 
   getUserPosts() async {
-    var res = await callApi("/post/read", true, {
-      "userId": widget.userId,
-    });
+    var res = await callApi(
+        "/post/read",
+        true,
+        {
+          "userId": widget.userId,
+        },
+        ctx: context);
     List<Map<String, dynamic>> rows =
         List<Map<String, dynamic>>.from(res["response"]);
     posts = [];

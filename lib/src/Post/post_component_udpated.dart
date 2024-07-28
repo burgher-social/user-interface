@@ -87,15 +87,12 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
     obj["likes"] = widget.likeCount;
     obj["comments"] = widget.commentCount;
     obj["likedByUser"] = widget.likedPostByUser;
-    print(obj);
-    print("POSTS IN UPDATED COMPONENR");
     distanceCalculator();
   }
 
   @override
   void didUpdateWidget(oldwidget) {
     super.didUpdateWidget(oldwidget);
-    print("DID UPDATE CALLED");
     // print(this.widget.likeCount);
     obj["likedByUser"] = widget.likedPostByUser;
     obj["likes"] = widget.likeCount;
@@ -162,6 +159,7 @@ class _PostComponentUpdatedState extends State<PostComponentUpdated> {
         "count": count,
         "postId": widget.postId,
       },
+      ctx: context,
     );
   }
 

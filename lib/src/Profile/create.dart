@@ -41,13 +41,17 @@ class _CreateState extends State<Create> {
       setState(() {
         loading = true;
       });
-      var response = await callApi('/user/create', false, {
-        'email': widget.email?.trim(),
-        'tag': 0000,
-        "username": _usernameController.text.trim(),
-        "name": _nameController.text.trim(),
-        "firebaseAuthIdToken": widget.firebaseAuthToken
-      });
+      var response = await callApi(
+          '/user/create',
+          false,
+          {
+            'email': widget.email?.trim(),
+            'tag': 0000,
+            "username": _usernameController.text.trim(),
+            "name": _nameController.text.trim(),
+            "firebaseAuthIdToken": widget.firebaseAuthToken
+          },
+          ctx: context);
       print(response);
       if (response["accessToken"] == null) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -77,11 +77,15 @@ class _CommentsState extends State<Comments> {
       print("UPDATED PARENT");
       fieldText.clear();
       setState(() {});
-      await callApi("/post/create", true, {
-        "content": tempContent,
-        "parentId": widget.postId,
-        "topics": ["test"],
-      });
+      await callApi(
+          "/post/create",
+          true,
+          {
+            "content": tempContent,
+            "parentId": widget.postId,
+            "topics": ["test"],
+          },
+          ctx: context);
       var lat = AppConstants.latitude;
       var lng = AppConstants.longitude;
 
@@ -127,6 +131,7 @@ class _CommentsState extends State<Comments> {
       {
         "postId": widget.postId,
       },
+      ctx: context,
     );
     for (var i in res["response"]) {
       comments.add(

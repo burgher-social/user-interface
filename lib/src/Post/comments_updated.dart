@@ -41,12 +41,12 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
 
   Future<void> getComments() async {
     var res = await callApi(
-      "/post/comments/read",
-      true,
-      {
-        "postId": widget.postId,
-      },
-    );
+        "/post/comments/read",
+        true,
+        {
+          "postId": widget.postId,
+        },
+        ctx: context);
     for (var value in res["response"]) {
       comments.add(
         {
@@ -87,11 +87,15 @@ class _CommentsUpdatedState extends State<CommentsUpdated> {
 
       // post = widget.postComponent;
       setState(() {});
-      var resfrompostcreate = await callApi("/post/create", true, {
-        "content": tempContent,
-        "parentId": widget.postId,
-        "topics": ["test"],
-      });
+      var resfrompostcreate = await callApi(
+          "/post/create",
+          true,
+          {
+            "content": tempContent,
+            "parentId": widget.postId,
+            "topics": ["test"],
+          },
+          ctx: context);
       var lat = AppConstants.latitude;
       var lng = AppConstants.longitude;
 

@@ -16,11 +16,16 @@ class _NewPostState extends State<NewPost> {
     void submitPost() async {
       if (content == null || content == "") return;
       try {
-        var resp = await callApi("/post/create", true, {
-          "content": content,
-          "parentId": null,
-          "topics": ["test"],
-        });
+        var resp = await callApi(
+          "/post/create",
+          true,
+          {
+            "content": content,
+            "parentId": null,
+            "topics": ["test"],
+          },
+          ctx: context,
+        );
         print(resp);
         generateFeed([
           {
